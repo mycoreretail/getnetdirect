@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Portal Access | GetNetDirect</title>
-  <meta name="description" content="GetNetDirect portal access for referral partners, employees and administrators.">
+  <title>Portal Login | GetNetDirect</title>
+  <meta name="description" content="GetNetDirect portal login for referral partners, employees and administrators.">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="portal-page">
@@ -16,52 +16,67 @@
   </nav>
 
   <main class="portal-access-main">
-    <div class="container portal-access-wrap">
+    <div class="container portal-login-wrap">
       <div class="portal-access-head">
-        <span class="eyebrow">Secure Portal Access</span>
-        <h1>Choose your GetNetDirect portal</h1>
-        <p>Select the workspace that matches your role. In the live version, each account will sign in securely and automatically open the correct dashboard.</p>
+        <span class="eyebrow">Portal Access</span>
+        <h1>Sign in to GetNetDirect</h1>
+        <p>Employees, referral partners and management use the same login page. Your account opens the correct dashboard automatically.</p>
       </div>
 
-      <div class="portal-choice-grid">
-        <a class="portal-choice-card" href="employee-dashboard.html">
-          <div class="portal-choice-icon">👤</div>
-          <div class="portal-choice-copy">
-            <span class="portal-choice-label">For Sales &amp; Staff</span>
-            <h2>Employee Portal</h2>
-            <p>View assigned leads, contact customers, update signup status, enter provider details and track your activity.</p>
+      <div class="portal-login-card">
+        <div class="portal-login-brand">Account Login</div>
+        <form id="portalLoginForm">
+          <div class="field">
+            <label>Username</label>
+            <input id="portalUsername" autocomplete="username" required placeholder="Enter username">
           </div>
-          <span class="portal-choice-arrow">→</span>
-        </a>
+          <div class="field">
+            <label>Password</label>
+            <input id="portalPassword" type="password" autocomplete="current-password" required placeholder="Enter password">
+          </div>
+          <button class="btn btn-primary portal-login-btn" type="submit">Sign In</button>
+          <div class="form-status" id="portalLoginStatus"></div>
+        </form>
+        <div class="portal-login-help">Your login determines whether you enter the Admin, Employee, or Referral Partner dashboard.</div>
+      </div>
 
-        <a class="portal-choice-card" href="partner-dashboard.html">
-          <div class="portal-choice-icon">🤝</div>
-          <div class="portal-choice-copy">
-            <span class="portal-choice-label">For Referral Partners</span>
-            <h2>Partner Portal</h2>
-            <p>Submit referrals, track customer outcomes, view referral activity and see payout status.</p>
-          </div>
-          <span class="portal-choice-arrow">→</span>
-        </a>
-
-        <a class="portal-choice-card portal-choice-admin" href="admin.html">
-          <div class="portal-choice-icon">⚙️</div>
-          <div class="portal-choice-copy">
-            <span class="portal-choice-label">Management Only</span>
-            <h2>Admin Portal</h2>
-            <p>Manage all leads, employees, referral partners, assignments, customer outcomes and the payout ledger.</p>
-          </div>
-          <span class="portal-choice-arrow">→</span>
-        </a>
+      <div class="portal-role-preview">
+        <div><strong>Employee</strong><span>Assigned leads &amp; customer follow-up</span></div>
+        <div><strong>Referral Partner</strong><span>Referrals, results &amp; payout status</span></div>
+        <div><strong>Admin</strong><span>All leads, staff, partners &amp; payouts</span></div>
       </div>
 
       <div class="portal-security-note">
-        <strong>Current prototype:</strong> these buttons open the demo dashboards directly. Before real staff or partners use the system, secure account login and role-based access should be connected so only authorized users can enter each portal.
+        <strong>Basic GitHub login:</strong> this is a lightweight access screen for your static site, not server-side security. Do not use it to store SSNs, card information, passwords, or other highly sensitive customer data.
       </div>
     </div>
   </main>
 
   <footer class="portal-mini-footer">© <span data-year></span> GetNetDirect. All rights reserved.</footer>
-  <script src="script.js"></script>
+  <script src="auth.js"></script>
+  <script>
+    (function(){
+      const year=document.querySelector('[data-year]'); if(year) year.textContent=new Date().getFullYear();
+      const form=document.getElementById('portalLoginForm');
+      const status=document.getElementById('portalLoginStatus');
+      const params=new URLSearchParams(location.search);
+      if(params.get('reason')==='login'){
+        status.className='form-status error';status.style.display='block';status.textContent='Please sign in to continue.';
+      }else if(params.get('reason')==='wrong-role'){
+        status.className='form-status error';status.style.display='block';status.textContent='That account does not have access to that portal.';
+      }else if(params.get('loggedout')){
+        status.className='form-status success';status.style.display='block';status.textContent='You have been signed out.';
+      }
+      form.addEventListener('submit',async e=>{
+        e.preventDefault();
+        const btn=form.querySelector('button[type="submit"]');
+        btn.disabled=true;btn.textContent='Signing In...';
+        const result=await GNDAuth.login(document.getElementById('portalUsername').value,document.getElementById('portalPassword').value);
+        btn.disabled=false;btn.textContent='Sign In';
+        if(!result.ok){status.className='form-status error';status.style.display='block';status.textContent='Incorrect username or password.';return;}
+        location.href=result.user.destination;
+      });
+    })();
+  </script>
 </body>
 </html>

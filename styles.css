@@ -161,3 +161,7 @@ img,svg,video,canvas{max-width:100%}
   .portal-choice-card{padding:18px}
   .portal-choice-card h2{font-size:21px}
 }
+
+/* Basic portal login */
+.portal-login-wrap{max-width:760px;margin:auto}.portal-login-card{max-width:480px;margin:28px auto 22px;background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:28px}.portal-login-brand{font-size:22px;font-weight:900;color:var(--navy);margin-bottom:18px}.portal-login-card .field{margin-bottom:15px}.portal-login-btn{width:100%;margin-top:5px}.portal-login-help{font-size:12px;color:var(--muted);text-align:center;margin-top:15px}.portal-role-preview{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:760px;margin:0 auto 20px}.portal-role-preview div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px}.portal-role-preview strong{display:block;color:var(--navy);font-size:14px;margin-bottom:4px}.portal-role-preview span{display:block;color:var(--muted);font-size:12px}.dash-logout-btn{white-space:nowrap}
+@media(max-width:700px){.portal-role-preview{grid-template-columns:1fr}.portal-login-card{padding:20px;margin-top:20px}.dash-logout-btn{padding:9px 11px;font-size:12px}}

@@ -6,13 +6,13 @@
   <title>GetNetDirect Admin Portal</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body class="dashboard">
+<body class="dashboard" data-required-role="admin">
   <div class="dash-nav">
     <div class="container">
       <a class="brand" href="index.html"><img src="getnetdirect-logo.png" alt="GetNetDirect"></a>
       <div class="dash-nav-actions">
         <span class="portal-role">Administrator</span>
-        <a class="btn btn-secondary dash-public-btn" href="index.html">Public Website</a><a class="btn btn-secondary dash-portal-btn" href="portal.html">Portal Access</a>
+        <a class="btn btn-secondary dash-public-btn" href="index.html">Public Website</a><a class="btn btn-secondary dash-portal-btn" href="portal.html">Portal Access</a><button class="btn btn-secondary dash-logout-btn" type="button" data-logout>Log Out</button>
       </div>
     </div>
   </div>
@@ -151,6 +151,7 @@
   </div>
 
   <div id="toast" class="toast" aria-live="polite"></div>
-  <script src="script.js"></script>
+  <script src="auth.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
