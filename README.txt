@@ -1,29 +1,43 @@
-GETNETDIRECT WEBSITE PROTOTYPE
+GetNetDirect Website Prototype
+==============================
 
-Open index.html to view the public website.
+Main pages
+- index.html                Public customer website
+- partner.html              Referral partner program / application
+- partner-dashboard.html    Referral partner portal
+- employee-dashboard.html   Employee / sales representative portal
+- admin.html                GetNetDirect administrator portal
+- privacy.html              Privacy placeholder
+- terms.html                Terms placeholder
 
-Included pages:
-- index.html              Public website + customer lead form
-- partner.html            Referral partner program + application
-- partner-dashboard.html  Demo partner dashboard + referral form
-- admin.html              Demo admin dashboard
-- privacy.html            Draft placeholder privacy notice
-- terms.html              Draft placeholder terms
+Admin portal prototype features
+- View all direct and referral leads
+- Search and filter leads
+- Assign leads to employees
+- Update provider, lead outcome, order number and install date
+- Mark customers Signed Up / Installed / Not Signed Up
+- Set partner payout amount and status (Pending / Approved / Paid)
+- Record payout paid date and payment reference
+- Partner payout ledger
+- Create employee profiles and open their portal views
+- Copy a referral-status message for a partner
 
-Prototype behavior:
-- Customer leads and partner referrals are stored in browser localStorage only.
-- ?ref=PARTNERCODE is captured as a referral source.
-- Admin demo reads locally submitted leads from the same browser.
-- No real login, database, SMS, email, carrier API, payment or payout functionality is connected yet.
+Partner portal prototype features
+- Submit customer referrals
+- Unique referral code / link
+- Referral status tracking
+- See signed-up / installed outcomes
+- See approved and paid payout amounts
+- Payout ledger
 
-Recommended production backend:
-- Next.js or similar frontend framework
-- Supabase/Postgres for database + authentication
-- Row-level security / roles for admin, reps and partners
-- Provider/address availability API(s)
-- Email and SMS notifications
-- Secure audit logs
-- TCPA / marketing consent language reviewed by legal counsel
-- Privacy policy and partner agreement reviewed before launch
+Employee portal prototype features
+- Employee-specific assigned lead list
+- Call / text / email shortcuts
+- Update lead status and provider
+- Enter order number and install date
+- Internal notes
+- Performance snapshot
+- No access to partner payout controls
 
-Brand file included in assets/getnetdirect-logo.png.
+IMPORTANT
+This is still a front-end prototype using browser localStorage. Data is not shared between computers, phones, employees or partners yet. Before using this with real customers, connect a secure backend/database and authentication system (for example Supabase), and add proper role-based permissions. Do not collect SSNs, full card information or carrier passwords in these prototype forms.

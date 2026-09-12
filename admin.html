@@ -1,1 +1,156 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Dashboard Demo | GetNetDirect</title><link rel="stylesheet" href="styles.css"></head><body class="dashboard"><div class="dash-nav"><div class="container"><a class="brand" href="index.html"><img src="getnetdirect-logo.png" alt="GetNetDirect"></a><a class="btn btn-secondary" href="index.html">Public Website</a></div></div><div class="container dash-layout"><aside class="sidebar"><a class="side-link active" href="#">Dashboard</a><a class="side-link" href="#leads">Leads</a><a class="side-link" href="#">Partners</a><a class="side-link" href="#">Sales Reps</a><a class="side-link" href="#">Payouts</a><a class="side-link" href="#">Reports</a></aside><main class="dash-main"><h1>Admin Dashboard</h1><p>Local prototype view of customer and partner-generated leads.</p><div class="notice">This prototype stores submissions in your browser only. Before launch, connect authentication, database, SMS/email, provider availability and role-based access.</div><div class="stats" style="margin-top:18px"><div class="stat"><div class="label">Total Leads</div><div class="value" id="statLeads">0</div><div class="sub">Local prototype</div></div><div class="stat"><div class="label">Partner Referrals</div><div class="value" id="statReferrals">0</div><div class="sub">Referral submissions</div></div><div class="stat"><div class="label">Direct Leads</div><div class="value" id="statDirect">0</div><div class="sub">Website requests</div></div><div class="stat"><div class="label">Installed</div><div class="value" id="statInstalled">0</div><div class="sub">Production status later</div></div></div><div class="panel" id="leads"><div class="panel-head"><h2>Lead activity</h2><a class="btn btn-primary" href="index.html#availability">Add Test Lead</a></div><div class="table-wrap"><table class="table"><thead><tr><th>Customer</th><th>Phone</th><th>Address</th><th>Service</th><th>Source</th><th>Status</th><th>Date</th></tr></thead><tbody id="leadTableBody"></tbody></table></div></div><div class="panel"><h2>Production workflow</h2><div class="providers" style="justify-content:flex-start"><span class="provider-pill">New Referral</span><span class="provider-pill">Assigned</span><span class="provider-pill">Contacted</span><span class="provider-pill">Qualified</span><span class="provider-pill">Order Submitted</span><span class="provider-pill">Install Scheduled</span><span class="provider-pill">Installed</span><span class="provider-pill">Commission Approved</span><span class="provider-pill">Paid</span></div></div></main></div><script src="script.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>GetNetDirect Admin Portal</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dashboard">
+  <div class="dash-nav">
+    <div class="container">
+      <a class="brand" href="index.html"><img src="getnetdirect-logo.png" alt="GetNetDirect"></a>
+      <div class="dash-nav-actions">
+        <span class="portal-role">Administrator</span>
+        <a class="btn btn-secondary" href="index.html">Public Website</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container dash-layout">
+    <aside class="sidebar">
+      <a class="side-link active" href="#overview">Overview</a>
+      <a class="side-link" href="#leads">Lead Management</a>
+      <a class="side-link" href="#payouts">Partner Payouts</a>
+      <a class="side-link" href="#employees">Employees</a>
+      <a class="side-link" href="#workflow">Workflow</a>
+      <a class="side-link" href="partner-dashboard.html">Partner Portal Demo</a>
+      <a class="side-link" href="employee-dashboard.html">Employee Portal</a>
+    </aside>
+
+    <main class="dash-main">
+      <section id="overview">
+        <div class="dash-title-row">
+          <div>
+            <span class="portal-kicker">GetNetDirect Operations</span>
+            <h1>Admin Portal</h1>
+            <p>Manage customer leads, referral outcomes, partner payouts and your sales team from one place.</p>
+          </div>
+          <button class="btn btn-secondary" id="refreshAdmin" type="button">Refresh Data</button>
+        </div>
+
+        <div class="notice">
+          <strong>Prototype mode:</strong> this version uses browser storage so you can test the workflow. For real employees and partners on different devices, the next step is connecting a secure database and login system.
+        </div>
+
+        <div class="stats admin-stats" style="margin-top:18px">
+          <div class="stat"><div class="label">Total Leads</div><div class="value" id="statLeads">0</div><div class="sub">All lead sources</div></div>
+          <div class="stat"><div class="label">Partner Referrals</div><div class="value" id="statReferrals">0</div><div class="sub">Referral partner leads</div></div>
+          <div class="stat"><div class="label">Signed Up</div><div class="value" id="statSignedUp">0</div><div class="sub">Signed up or installed</div></div>
+          <div class="stat"><div class="label">Unpaid Payouts</div><div class="value" id="statUnpaidPayouts">$0</div><div class="sub">Approved / pending</div></div>
+          <div class="stat"><div class="label">Installed</div><div class="value" id="statInstalled">0</div><div class="sub">Completed installs</div></div>
+        </div>
+      </section>
+
+      <section class="panel" id="leads">
+        <div class="panel-head panel-head-wrap">
+          <div>
+            <h2>Lead Management</h2>
+            <p class="panel-sub">Open a lead to assign an employee, update signup status, provider information and referral payout.</p>
+          </div>
+          <div class="table-tools">
+            <input id="adminLeadSearch" class="tool-input" type="search" placeholder="Search customer, phone, address...">
+            <select id="adminLeadFilter" class="tool-select">
+              <option value="all">All statuses</option>
+              <option>New</option>
+              <option>New Referral</option>
+              <option>Assigned</option>
+              <option>Contacted</option>
+              <option>Qualified</option>
+              <option>Signed Up</option>
+              <option>Install Scheduled</option>
+              <option>Installed</option>
+              <option>Not Signed Up</option>
+              <option>Cancelled</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table admin-lead-table">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Contact</th>
+                <th>Service / Address</th>
+                <th>Source</th>
+                <th>Assigned Rep</th>
+                <th>Status</th>
+                <th>Payout</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="adminLeadTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="payouts">
+        <div class="panel-head">
+          <div>
+            <h2>Partner Payout Ledger</h2>
+            <p class="panel-sub">A clean ledger showing which referral commissions are pending, approved or already paid.</p>
+          </div>
+          <div class="ledger-totals">
+            <span>Pending: <strong id="ledgerPendingTotal">$0</strong></span>
+            <span>Paid: <strong id="ledgerPaidTotal">$0</strong></span>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>Customer</th><th>Partner Code</th><th>Outcome</th><th>Amount</th><th>Payout Status</th><th>Paid Date</th><th>Payment Ref.</th></tr>
+            </thead>
+            <tbody id="payoutLedgerBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="employees">
+        <div class="panel-head panel-head-wrap">
+          <div>
+            <h2>Employee Accounts</h2>
+            <p class="panel-sub">Create a sales rep profile, assign leads to them and give them their own dashboard view.</p>
+          </div>
+          <a class="btn btn-secondary" href="employee-dashboard.html">Open Employee Portal</a>
+        </div>
+
+        <form id="employeeCreateForm" class="employee-create-form">
+          <div class="field"><label>Employee Name *</label><input name="name" required placeholder="Full name"></div>
+          <div class="field"><label>Email *</label><input name="email" type="email" required placeholder="name@getnetdirect.com"></div>
+          <div class="field"><label>Phone</label><input name="phone" type="tel"></div>
+          <div class="field"><label>Role</label><select name="role"><option>Sales Representative</option><option>Sales Manager</option><option>Customer Service</option><option>Field Sales</option></select></div>
+          <div class="field employee-create-action"><button class="btn btn-primary" type="submit">Create Employee</button></div>
+          <div class="form-status employee-status"></div>
+        </form>
+
+        <div class="table-wrap" style="margin-top:18px">
+          <table class="table">
+            <thead><tr><th>Employee</th><th>Role</th><th>Contact</th><th>Assigned Leads</th><th>Status</th><th>Portal</th></tr></thead>
+            <tbody id="employeeTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="workflow">
+        <div class="panel-head"><div><h2>Recommended Lead Workflow</h2><p class="panel-sub">The partner sees the same customer outcome without seeing internal notes or sensitive information.</p></div></div>
+        <div class="workflow-strip">
+          <span>New Referral</span><i>→</i><span>Assigned</span><i>→</i><span>Contacted</span><i>→</i><span>Qualified</span><i>→</i><span>Signed Up</span><i>→</i><span>Install Scheduled</span><i>→</i><span>Installed</span><i>→</i><span>Paid</span>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" aria-live="polite"></div>
+  <script src="script.js"></script>
+</body>
+</html>
