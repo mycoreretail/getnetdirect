@@ -7,7 +7,16 @@
 
   const year=$('[data-year]'); if(year) year.textContent=new Date().getFullYear();
   const menu=$('.menu-btn');
-  if(menu) menu.addEventListener('click',()=>{const links=$('.nav-links'); if(links) links.style.display=links.style.display==='flex'?'none':'flex';});
+  if(menu) menu.addEventListener('click',()=>{
+    const links=$('.nav-links'); if(!links)return;
+    const open=links.classList.toggle('open');
+    menu.setAttribute('aria-expanded',open?'true':'false');
+    menu.textContent=open?'✕':'☰';
+  });
+  $$('.nav-links a').forEach(a=>a.addEventListener('click',()=>{
+    const links=$('.nav-links'); if(links)links.classList.remove('open');
+    if(menu){menu.setAttribute('aria-expanded','false');menu.textContent='☰';}
+  }));
 
   const params=new URLSearchParams(location.search);
   const ref=params.get('ref')||localStorage.getItem('gnd_ref')||'';
