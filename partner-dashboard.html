@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Referral Partner Portal | GetNetDirect</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=6">
   <script>
     (function(){
       try{
@@ -79,7 +79,7 @@
             <div class="field"><label>State *</label><input name="state" maxlength="2" required></div>
             <div class="field"><label>ZIP *</label><input name="zip" required></div>
             <div class="field"><label>Estimated Move-In Date</label><input name="moveIn" type="date"></div>
-            <div class="field full"><label>Services Requested</label><div class="checkbox-grid"><label class="check-card"><input type="checkbox" name="services" value="Internet"> Internet</label><label class="check-card"><input type="checkbox" name="services" value="Mobile"> Mobile</label><label class="check-card"><input type="checkbox" name="services" value="TV"> TV</label><label class="check-card"><input type="checkbox" name="services" value="Home Phone"> Home Phone</label></div></div>
+            <div class="field full"><label>Services Requested</label><div class="service-choice-grid" aria-label="Services requested"><label class="service-choice"><input type="checkbox" name="services" value="Internet"><span class="service-choice-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4.9 9.3a11.2 11.2 0 0 1 14.2 0M7.8 12.5a6.9 6.9 0 0 1 8.4 0M10.5 15.7a2.7 2.7 0 0 1 3 0M12 19h.01"/></svg></span><span class="service-choice-label">Internet</span><span class="service-choice-check">✓</span></label><label class="service-choice"><input type="checkbox" name="services" value="Mobile"><span class="service-choice-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M10 5h4M11.5 18.5h1"/></svg></span><span class="service-choice-label">Mobile / Cell</span><span class="service-choice-check">✓</span></label><label class="service-choice"><input type="checkbox" name="services" value="TV"><span class="service-choice-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="M8 21h8M12 18v3"/></svg></span><span class="service-choice-label">TV</span><span class="service-choice-check">✓</span></label><label class="service-choice"><input type="checkbox" name="services" value="Home Phone"><span class="service-choice-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7.2 3.8 4.9 5.5c-.8.6-1.1 1.7-.7 2.6 2.1 5.2 6.5 9.6 11.7 11.7.9.4 2 0 2.6-.7l1.7-2.3c.5-.7.4-1.7-.3-2.2l-2.8-2.1c-.6-.4-1.4-.4-1.9.1l-1.5 1.3a14.4 14.4 0 0 1-3.6-3.6l1.3-1.5c.5-.6.5-1.4.1-1.9L9.4 4.1c-.5-.7-1.5-.8-2.2-.3Z"/></svg></span><span class="service-choice-label">Home Phone</span><span class="service-choice-check">✓</span></label><label class="service-choice"><input type="checkbox" name="services" value="Business Internet"><span class="service-choice-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 21V6l8-3 8 3v15M8 9h2M14 9h2M8 13h2M14 13h2M9 21v-4h6v4"/></svg></span><span class="service-choice-label">Business</span><span class="service-choice-check">✓</span></label><label class="service-choice"><input type="checkbox" name="services" value="Not Sure"><span class="service-choice-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.4 2.4 0 1 1 3.4 2.2c-.8.4-1.2.9-1.2 1.8M12 17h.01"/></svg></span><span class="service-choice-label">Not Sure</span><span class="service-choice-check">✓</span></label></div><small class="service-choice-hint">Select one or more services.</small></div>
             <div class="field full"><label>Notes</label><textarea name="notes" placeholder="Move-in details, best call time, special request, etc."></textarea></div>
             <input type="hidden" name="partnerCode" id="partnerCodeField" value="DEMO123">
             <div class="field full"><button class="btn btn-primary" type="submit">Submit Referral</button><div class="form-status"></div></div>
@@ -99,7 +99,7 @@
     </main>
   </div>
   <div id="toast" class="toast" aria-live="polite"></div>
-  <script src="auth.js?v=2"></script>
-<script src="script.js"></script>
+  <script src="auth.js?v=6"></script>
+<script src="script.js?v=6"></script>
 </body>
 </html>

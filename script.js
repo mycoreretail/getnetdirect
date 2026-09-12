@@ -18,6 +18,24 @@
     if(menu){menu.setAttribute('aria-expanded','false');menu.textContent='☰';}
   }));
 
+  // Service-interest cards: 'Not Sure' acts as an exclusive choice.
+  $$('.service-choice-grid').forEach(grid=>{
+    const boxes=$$('input[type="checkbox"][name="services"]',grid);
+    boxes.forEach(box=>box.addEventListener('change',()=>{
+      if(!box.checked)return;
+      if(box.value==='Not Sure') boxes.forEach(other=>{if(other!==box)other.checked=false;});
+      else boxes.forEach(other=>{if(other.value==='Not Sure')other.checked=false;});
+    }));
+  });
+
+  // Keep the mobile navigation from remaining open after layout changes.
+  window.addEventListener('resize',()=>{
+    if(window.innerWidth>980){
+      const links=$('.nav-links'); if(links)links.classList.remove('open');
+      if(menu){menu.setAttribute('aria-expanded','false');menu.textContent='☰';}
+    }
+  });
+
   const params=new URLSearchParams(location.search);
   const ref=params.get('ref')||localStorage.getItem('gnd_ref')||'';
   if(params.get('ref')) localStorage.setItem('gnd_ref',params.get('ref'));

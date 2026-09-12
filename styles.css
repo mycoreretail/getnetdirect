@@ -165,3 +165,141 @@ img,svg,video,canvas{max-width:100%}
 /* Basic portal login */
 .portal-login-wrap{max-width:760px;margin:auto}.portal-login-card{max-width:480px;margin:28px auto 22px;background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:28px}.portal-login-brand{font-size:22px;font-weight:900;color:var(--navy);margin-bottom:18px}.portal-login-card .field{margin-bottom:15px}.portal-login-btn{width:100%;margin-top:5px}.portal-login-help{font-size:12px;color:var(--muted);text-align:center;margin-top:15px}.portal-role-preview{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:760px;margin:0 auto 20px}.portal-role-preview div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px}.portal-role-preview strong{display:block;color:var(--navy);font-size:14px;margin-bottom:4px}.portal-role-preview span{display:block;color:var(--muted);font-size:12px}.dash-logout-btn{white-space:nowrap}
 @media(max-width:700px){.portal-role-preview{grid-template-columns:1fr}.portal-login-card{padding:20px;margin-top:20px}.dash-logout-btn{padding:9px 11px;font-size:12px}}
+
+
+/* v6 responsive hardening + service interest icons */
+.service-icon svg,.service-choice-icon svg{width:27px;height:27px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.service-icon{color:var(--blue2)}
+.service-choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;width:100%}
+.service-choice{position:relative;min-width:0;min-height:82px;border:1px solid #cfdeeb;border-radius:15px;background:#fff;padding:13px 36px 13px 13px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:border-color .18s ease,box-shadow .18s ease,background .18s ease,transform .18s ease;-webkit-tap-highlight-color:transparent}
+.service-choice:hover{border-color:#9ecdf1;box-shadow:0 7px 20px rgba(11,37,84,.07)}
+.service-choice input{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
+.service-choice-icon{width:42px;height:42px;flex:0 0 42px;border-radius:12px;background:#eef7ff;color:var(--blue2);display:flex;align-items:center;justify-content:center}
+.service-choice-label{min-width:0;color:#243b58;font-size:14px;font-weight:850;line-height:1.2;overflow-wrap:anywhere}
+.service-choice-check{position:absolute;top:10px;right:10px;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#dbe7f1;color:transparent;font-size:12px;font-weight:900;transition:.18s ease}
+.service-choice:has(input:checked){border-color:var(--blue);background:#f1f9ff;box-shadow:0 0 0 3px rgba(19,140,243,.10)}
+.service-choice:has(input:checked) .service-choice-icon{background:var(--blue);color:#fff}
+.service-choice:has(input:checked) .service-choice-check{background:var(--green);color:#fff}
+.service-choice:focus-within{outline:3px solid rgba(19,140,243,.14);outline-offset:2px}
+.service-choice-hint{display:block;margin-top:8px;color:var(--muted);font-size:12px}
+
+/* Prevent narrow elements from forcing page overflow */
+body,.nav,.hero,.section,.footer,.dashboard,.portal-page{width:100%;min-width:0}
+.container,.nav-inner,.hero-grid,.form-grid,.mini-grid,.service-grid,.steps,.partner-banner,.dash-layout,.dash-main,.panel,.panel-head,.stats,.admin-stats,.portal-login-wrap,.portal-login-card{min-width:0}
+input,select,textarea,button{min-width:0;max-width:100%}
+.long-text,.referral-box span,#partnerLinkDisplay{overflow-wrap:anywhere;word-break:break-word}
+
+/* Tablet: keep breathing room and stop squeezed navigation */
+@media (max-width:1100px){
+  .nav-inner{gap:12px}
+  .nav-links{gap:16px;font-size:13px}
+  .nav-actions .btn{padding:10px 13px;font-size:13px}
+  .hero-grid{grid-template-columns:1fr 1fr;gap:30px}
+  .hero h1{font-size:clamp(40px,5vw,58px)}
+  .service-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .service-choice-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .footer-grid{grid-template-columns:1.4fr 1fr 1fr}
+  .footer-grid>div:first-child{grid-row:span 2}
+}
+
+@media (max-width:980px){
+  .hero-grid{grid-template-columns:minmax(0,1fr)}
+  .hero-grid>div{min-width:0}
+  .hero-card{max-width:720px;margin:0 auto;width:100%}
+  .service-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .partner-banner{grid-template-columns:minmax(0,1fr);padding:34px}
+  .footer-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .footer-grid>div:first-child{grid-row:auto}
+  .dash-layout{grid-template-columns:minmax(0,1fr)}
+  .sidebar{position:static;display:flex;overflow-x:auto;gap:5px;max-width:100%;scrollbar-width:thin}
+  .side-link{flex:0 0 auto;white-space:nowrap}
+  .service-choice-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+
+@media (max-width:760px){
+  .container,.dashboard .container{width:calc(100% - 24px)}
+  .nav-inner{height:68px}
+  .nav-actions{gap:6px}
+  .nav-actions .nav-availability-btn,.nav-actions .portal-login-btn{display:none}
+  .menu-btn{display:flex!important}
+  .hero{padding:38px 0 44px}
+  .hero h1{font-size:clamp(34px,9vw,44px)}
+  .hero p{font-size:16px}
+  .hero-actions{display:grid;grid-template-columns:minmax(0,1fr);gap:9px}
+  .hero-actions .btn{width:100%}
+  .trust-row{display:grid;grid-template-columns:minmax(0,1fr);gap:9px}
+  .section{padding:52px 0}
+  .section-head{margin-bottom:28px}
+  .section-head h2{font-size:clamp(29px,7vw,36px)}
+  .section-head p{font-size:16px}
+  .form-shell{padding:18px;border-radius:18px}
+  .mini-grid,.form-grid{grid-template-columns:minmax(0,1fr)}
+  .field,.field.full{grid-column:1/-1;min-width:0}
+  .field input,.field select,.field textarea{font-size:16px}
+  .service-choice-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .service-choice{min-height:74px;padding:11px 31px 11px 11px;gap:9px}
+  .service-choice-icon{width:38px;height:38px;flex-basis:38px}
+  .service-choice-icon svg{width:24px;height:24px}
+  .service-choice-label{font-size:13px}
+  .service-choice-check{top:8px;right:8px;width:18px;height:18px}
+  .service-grid,.steps{grid-template-columns:minmax(0,1fr)}
+  .partner-banner{padding:22px;border-radius:20px}
+  .partner-banner h2{font-size:30px}
+  .partner-banner .btn{width:100%}
+  .providers{gap:7px}
+  .provider-pill{font-size:12px;padding:8px 11px}
+  .footer-grid{grid-template-columns:minmax(0,1fr)}
+  .dash-nav .container{display:flex;flex-wrap:wrap;height:auto;min-height:68px;padding:8px 0;align-items:center}
+  .dash-nav .brand{flex:1 1 150px}
+  .dash-nav-actions{margin-left:auto;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:100%}
+  .dash-nav-actions .portal-role,.dash-nav-actions .dash-public-btn{display:none}
+  .dash-nav-actions .btn{font-size:11px;padding:8px 9px}
+  .dash-layout{padding:14px 0 36px}
+  .panel{padding:14px;overflow:hidden}
+  .panel-head{align-items:flex-start;flex-direction:column}
+  .panel-head .btn{width:100%}
+  .stats,.admin-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .stat{padding:13px}
+  .stat .value{font-size:23px}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;max-width:100%}
+  .table{min-width:680px}
+  .admin-lead-table,.employee-lead-table{min-width:920px}
+  .referral-box{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+  .portal-access-main{padding:38px 0 50px}
+  .portal-login-card{width:100%;padding:20px;margin:20px auto 18px}
+  .portal-role-preview{grid-template-columns:minmax(0,1fr)}
+  .portal-top-actions .btn{font-size:12px;padding:9px 10px}
+}
+
+@media (max-width:480px){
+  .container,.dashboard .container{width:calc(100% - 16px)}
+  .brand img,.dash-nav .brand img,.portal-topnav .brand img{width:136px;max-width:48vw;height:auto;max-height:43px}
+  .nav-inner{gap:6px}
+  .nav-actions{margin-left:auto}
+  .menu-btn{width:40px;height:40px;flex:0 0 40px}
+  .hero h1{font-size:32px;letter-spacing:-.035em}
+  .hero-card{padding:15px;border-radius:17px}
+  .service-choice-grid{grid-template-columns:minmax(0,1fr)}
+  .service-choice{min-height:66px}
+  .service-choice-label{font-size:14px}
+  .partner-banner{padding:19px}
+  .partner-banner h2{font-size:27px}
+  .form-shell{padding:13px}
+  .stats,.admin-stats{grid-template-columns:minmax(0,1fr)}
+  .dash-nav .container{gap:6px}
+  .dash-nav .brand{flex:1 1 120px}
+  .dash-nav-actions{flex:0 1 auto}
+  .dash-nav-actions .dash-portal-btn{display:none}
+  .dash-nav-actions .dash-logout-btn{font-size:11px;padding:8px 9px}
+  .sidebar{margin-inline:0;padding:7px}
+  .side-link{font-size:11px;padding:8px 9px}
+  .dash-main h1{font-size:24px}
+  .panel{padding:12px;border-radius:13px}
+  .panel h2{font-size:18px}
+  .table{min-width:640px}
+  .portal-access-head h1{font-size:32px}
+  .portal-login-card{padding:16px;border-radius:18px}
+  .portal-top-actions .btn{font-size:11px;padding:8px 9px}
+  .portal-security-note{font-size:12px;padding:12px}
+}
