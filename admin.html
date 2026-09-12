@@ -5,6 +5,28 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>GetNetDirect Admin Portal</title>
   <link rel="stylesheet" href="styles.css">
+  <script>
+    (function(){
+      try{
+        const raw=localStorage.getItem('gnd_basic_session');
+        if(!raw){ location.replace('portal.html?reason=login'); return; }
+        const session=JSON.parse(raw);
+        if(!session || !session.expiresAt || Date.now()>session.expiresAt){
+          localStorage.removeItem('gnd_basic_session');
+          location.replace('portal.html?reason=login');
+          return;
+        }
+        const requiredRole='admin';
+        if(session.role!=='admin' && session.role!==requiredRole){
+          location.replace('portal.html?reason=wrong-role');
+          return;
+        }
+      }catch(e){
+        localStorage.removeItem('gnd_basic_session');
+        location.replace('portal.html?reason=login');
+      }
+    })();
+  </script>
 </head>
 <body class="dashboard" data-required-role="admin">
   <div class="dash-nav">
@@ -151,7 +173,7 @@
   </div>
 
   <div id="toast" class="toast" aria-live="polite"></div>
-  <script src="auth.js"></script>
+  <script src="auth.js?v=2"></script>
 <script src="script.js"></script>
 </body>
 </html>
