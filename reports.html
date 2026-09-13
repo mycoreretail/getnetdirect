@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
+<title>Reports &amp; Trends | GetNetDirect</title>
+<link href="styles.css?v=11" rel="stylesheet"/>
+<script>
+    (function(){
+      try{
+        const raw=localStorage.getItem('gnd_basic_session');
+        if(!raw){ location.replace('portal.html?reason=login'); return; }
+        const s=JSON.parse(raw);
+        if(!s || !s.expiresAt || Date.now()>s.expiresAt || s.role!=='admin'){
+          localStorage.removeItem('gnd_basic_session');
+          location.replace('portal.html?reason=login');
+        }
+      }catch(e){ location.replace('portal.html?reason=login'); }
+    })();
+  </script>
+</head>
+<body class="dashboard reports-page" data-required-role="admin">
+<header class="dash-nav">
+<div class="container">
+<a aria-label="GetNetDirect home" class="brand" href="index.html"><img alt="GetNetDirect" src="getnetdirect-logo-header.png"/></a>
+<div class="dash-nav-actions">
+<span class="portal-role">Administrator</span>
+<a class="btn btn-secondary dash-public-btn" href="index.html">Website</a>
+<a class="btn btn-secondary dash-portal-btn" href="portal.html">Portal</a>
+<button class="btn btn-secondary dash-logout-btn" data-logout="" type="button">Log Out</button>
+</div>
+</div>
+</header>
+<div class="container dash-layout">
+<nav aria-label="Admin navigation" class="sidebar"><a class="side-link" href="admin.html">Overview</a><a class="side-link" href="admin.html#adminActionCenter">Priority Alerts</a><a class="side-link" href="admin.html#leads">Leads</a><a aria-current="page" class="side-link active" href="reports.html">Reports &amp; Trends</a><a class="side-link" href="admin.html#people">Team &amp; Partners</a><a class="side-link" href="admin.html#payouts">Payout Ledger</a></nav>
+<main class="dash-main report-main">
+<div class="sync-status" id="reportConnection" role="status">Loading shared reporting data…</div>
+<div class="report-title"><div><span class="portal-kicker">GetNetDirect / Business insights</span><h1>Understand your growth.</h1><p>Compare activity, spot delays and see which referral sources are producing results.</p></div><div class="report-actions"><button class="btn btn-secondary" id="refreshReports">Refresh Data</button><button class="btn btn-primary" disabled="" id="exportReports">Export CSV</button></div></div>
+<form class="report-filters panel" id="reportFilters">
+<div class="field"><label for="reportPreset">Date range</label><select id="reportPreset"><option value="year">Year to date</option><option value="30">Last 30 days</option><option value="12">Last 12 months</option><option value="all">All available history</option><option value="custom">Custom range</option></select></div>
+<div class="field"><label for="reportStart">From</label><input id="reportStart" required="" type="date"/></div><div class="field"><label for="reportEnd">Through</label><input id="reportEnd" required="" type="date"/></div>
+<div class="field"><label for="reportGrain">Group chart by</label><select id="reportGrain"><option value="day">Day</option><option selected="" value="month">Month</option><option value="year">Year</option></select></div>
+<div class="field"><label for="reportMetric">Compare</label><select id="reportMetric"><option value="leads">Leads received</option><option value="signups">First signup recorded</option><option value="completions">First completion verified</option></select></div>
+<div class="field"><label for="reportSource">Lead source</label><select id="reportSource"><option value="all">All sources</option><option value="Direct">Direct</option><option value="Employee">Employee / contractor QR</option><option value="Partner">Referral partner</option></select></div>
+<div class="field"><label for="reportEmployee">Assigned rep</label><select id="reportEmployee"><option value="">All reps</option></select></div><div class="field"><label for="reportPartner">Referral partner</label><select id="reportPartner"><option value="">All partners</option></select></div>
+<div class="field"><label for="reportTimezone">Report timezone</label><select id="reportTimezone"><option value="America/New_York">Eastern</option><option value="America/Chicago">Central</option><option value="America/Denver">Mountain</option><option value="America/Los_Angeles">Pacific</option><option value="UTC">UTC</option></select></div>
+<div class="field"><span aria-hidden="true"> </span><button class="btn btn-primary" type="submit">Apply Filters</button></div>
+</form>
+<div class="report-error" hidden="" id="reportError" role="alert"></div>
+<section aria-labelledby="compareTitle"><div class="section-title-inline"><h2 id="compareTitle">How are we doing?</h2><span id="comparisonContext">Matched calendar periods</span></div><div class="comparison-cards" id="comparisonCards"><div class="empty-card">Reports load after the server confirms your admin account.</div></div><p class="report-note">Day-over-day uses the selected end date; month-over-month compares month-to-date; year-over-year compares year-to-date. For today, both periods stop at the same local time. Shorter months and leap days are capped to a valid date. The From date affects the chart and cohort tables, not these three comparisons.</p></section>
+<div class="history-notice" hidden="" id="historyNotice" role="note"></div>
+<section aria-labelledby="trendTitle" class="panel"><div class="panel-head"><div><span class="portal-kicker">Volume over time</span><h2 id="trendTitle">Lead activity trend</h2><p class="panel-sub" id="trendCaption"></p></div><span class="report-pill" id="rangeLabel"></span></div><div class="report-chart" id="trendChart"></div><div class="chart-legend" id="chartLegend"><span class="legend-leads">Leads received</span><span class="legend-signups">First signup recorded</span><span class="legend-completions">First completion verified</span></div><details class="report-data-details"><summary>View the chart as a data table</summary><div class="table-wrap"><table class="table report-data-table"><thead><tr><th>Period</th><th>Received</th><th>First signup</th><th>First completion</th></tr></thead><tbody id="trendDataBody"></tbody></table></div></details></section>
+<section aria-label="Selected cohort summary"><div class="cohort-stats" id="reportCohort"></div><p class="report-note">Cohort = leads received within your From/Through range, using their current outcome. Completion rate = currently Complete ÷ non-Void leads in that cohort. It is not a carrier-confirmed revenue figure.</p></section>
+<section aria-labelledby="outcomeTitle" class="panel"><div class="panel-head"><div><span class="portal-kicker">Current pipeline</span><h2 id="outcomeTitle">Where those leads stand</h2></div></div><div class="outcome-bars" id="outcomeChart"></div></section>
+<section aria-labelledby="teamReportTitle" class="panel"><div class="panel-head"><div><h2 id="teamReportTitle">Employee &amp; contractor performance</h2><p class="panel-sub">Current assigned rep, grouped by received date. Reassigning a lead changes this portfolio view.</p></div></div><div class="table-wrap"><table class="table report-performance-table"><thead><tr><th>Sales rep</th><th>Received</th><th>Signup stage or complete</th><th>Complete</th><th>Open</th><th>Completion rate</th></tr></thead><tbody id="teamReportBody"></tbody></table></div></section>
+<section aria-labelledby="partnerReportTitle" class="panel"><div class="panel-head"><div><h2 id="partnerReportTitle">Referral partner performance</h2><p class="panel-sub">See which leasing offices, realtors and other partners bring in customers.</p></div></div><div class="table-wrap"><table class="table report-performance-table"><thead><tr><th>Partner</th><th>Received</th><th>Signup stage or complete</th><th>Complete</th><th>Open</th><th>Completion rate</th></tr></thead><tbody id="partnerReportBody"></tbody></table></div></section>
+<details class="panel report-definitions"><summary>Report definitions &amp; data limits</summary><p>Received counts use original lead creation dates. First signup and first completion charts use recorded event timestamps, not the last edit date. Undated historical signups/completions are not assigned invented dates. A later cancellation does not erase a genuine past signup/completion event; current-outcome tables show the result today. Void records are excluded from all charts and conversion denominators.</p><p>Historical activity logging begins with v11. Displayed contact or verification ages for older records without an event timestamp are conservative flags based on their received date. Payouts remain in the separate Admin ledger; these counts are not revenue, profit or carrier commission reports.</p><p>For a website bug or error, contact Developer Moe Nokaira at Core Retail Management Inc. (CRM).</p></details>
+</main></div>
+<script src="api-client.js?v=11"></script><script src="auth.js?v=11"></script><script src="insights-core.js?v=11"></script><script src="reports.js?v=11"></script>
+</body></html>

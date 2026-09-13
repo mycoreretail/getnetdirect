@@ -1,0 +1,122 @@
+GETNETDIRECT v11 — REPORTS & PRIORITY ALERTS
+Update package. Prepared locally; not automatically uploaded or deployed.
+
+INSTALL THIS UPDATE
+1. Extract the ZIP. Open the site folder.
+2. Upload the CONTENTS of site into the root of mycoreretail/getnetdirect.
+   Replace matching filenames. Do not put a second site folder inside the repo.
+   Keep your existing CNAME and .github/workflow files. Do not delete your repo.
+3. Include the complete api folder. api/server.js now imports api/v11-support.js;
+   BOTH must be uploaded together. api/package.json stays in api/.
+4. Wait for the GitHub Pages website and Railway getnetdirect-api deployments
+   to finish. The API root directory remains api and its start command npm start.
+   No GoDaddy or DNS changes are needed.
+5. Visit the API's /health URL:
+   https://getnetdirect-api-production.up.railway.app/health
+   A successful response should include ok:true and version:11.
+   This health check verifies connectivity, not the full customer workflow.
+6. Sign out and back in through portal.html. Your current database accounts and
+   existing passwords are preserved; this update does not reset credentials.
+7. Follow the two-device smoke test below before inviting more real users.
+
+NEW FILES THAT MUST NOT BE MISSED
+reports.html                 Admin-only Reports & Trends screen
+reports.js                   Reporting interface, chart and CSV export
+insights-core.js             Shared date/comparison/priority calculations
+admin-alerts.js              In-app alert summary, new-lead banner and inbox
+getnetdirect-logo-header.png  Larger logo with blank outer margin trimmed
+api/v11-support.js           Additive schema changes and new API routes
+
+The existing HTML pages, styles.css, script.js, auth.js, api-client.js and
+api/server.js also changed. Upload the full set to avoid mixed versions.
+All first-party stylesheet/script links now use ?v=11.
+
+DATABASE UPDATE
+The API adds timestamp/version columns, an activity table, reporting metadata
+and a partner application table at startup. It does not drop tables, wipe leads,
+or recreate existing accounts. Legacy status labels are normalized to the current
+labels. Startup waits for database initialization before accepting traffic.
+Take a database backup before installing any backend update. These migrations
+have been inspected and their logic tested with mocks, but have NOT been run
+against your live PostgreSQL database by this update package's author.
+Do not place DATABASE_URL, JWT_SECRET, ADMIN_PASSWORD or other secrets in GitHub.
+Existing Railway variables remain server-side. ADMIN_PASSWORD is a bootstrap
+value: redeploying is no longer a way to overwrite an existing admin password.
+
+TWO-DEVICE SMOKE TEST (AFTER DEPLOYMENT)
+A. Create a clearly named TEST rep through Admin, or use an existing test account.
+B. On a different browser/phone, open that rep's QR/link. Submit TEST customer
+   details and select just one service. Wait for an actual reference number.
+C. On Admin, confirm the lead, source code and correct rep assignment. The queue
+   should show a new/unworked lead; the open dashboard polls every 30 seconds.
+D. Sign in as the assigned rep. Confirm the lead and single service are visible.
+   Log No Answer or Contacted. Save a follow-up date and report Signed Up.
+E. On Admin, confirm the activity history and Admin verification alert. Verify
+   the test outcome and set Complete. It should leave the overdue queue.
+F. The employee cannot change Complete back to Contacted, edit a payout, access
+   another rep's lead or access Reports & Trends. Partners remain read-only for
+   outcomes and payouts. Test with separate roles, not the Admin account.
+G. Create a partner QR test, confirm it is attributed to that partner. Verify it
+   Complete before testing payout approval. Marking Paid requires a positive
+   amount, paid date and payment reference. No actual payment is sent by this app.
+H. Open Reports & Trends. Verify the new received/signup/completion event counts.
+   Filter by rep/partner and compare the chart's expandable data table.
+I. Deactivate the TEST account in Admin. Confirm its next authenticated request is
+   rejected. This change is now stored in the shared database, not just a browser.
+J. Mark your test leads Void from Admin when testing is finished. Void records
+   are excluded from operational activity charts and received-date reports.
+
+REPORTING DEFINITIONS
+- Leads received: original created_at; Void records excluded.
+- First signup: first recorded transition into Signed Up or Install Scheduled.
+- First completion: first recorded Admin transition into Complete.
+- These are event counts, not revenue, retained orders or proof of carrier pay.
+- Current outcome/completion-rate tables use leads RECEIVED in the selected range
+  and their present status. They are not historical snapshots as of that date.
+- Team/partner tables use the current assignment/attribution, not historical owners.
+- Today/day-over-day, month-to-date and year-to-date comparisons use matching local
+  clock cutoffs. Short previous months/leap days are capped at a valid date.
+- Eastern is the default report timezone. It can be changed on the report screen.
+- No prior captured history is labeled. Existing leads keep received dates, but
+  previously missing signup/completion dates are not invented or backfilled.
+- Daily grouping is limited to roughly one year; use month/year for long ranges.
+- CSV exports the selected activity series and current team/partner cohort tables.
+- Report Refresh Data is manual. The operational Admin screen polls automatically.
+
+ALERT RULES
+Blue: new/unworked or a lead that needs an assignment or next action.
+Amber: 24–48 calendar hours without recorded work/verification, or a late follow-up.
+Red: 48+ calendar hours without recorded work/verification, substantially overdue
+     follow-up, or a passed scheduled install date awaiting an outcome decision.
+Purple verification indicator: Signed Up / Install Scheduled awaiting Admin review.
+Complete, Cancelled, Void, Not Serviceable and Not Interested are excluded from the
+attention queue. Record contacts through Log Contacted/Log No Answer or a genuine
+sales update. Simply opening a record, reassigning it, changing its priority or
+editing a payout does not reset its sales clock. A future follow-up can suppress
+idle-work alerts for an already-worked lead, but not an untouched new lead.
+Date-only follow-ups become overdue after that calendar date in Eastern time.
+These are calendar-hour rules (including nights and weekends), not business hours.
+Thresholds are defaults in code, not a configurable admin settings screen.
+Counter categories can overlap; the priority queue deduplicates the lead itself.
+Legacy records without activity history use received time conservatively.
+
+NOTIFICATIONS
+An action summary appears after successful Admin data loading once per login
+session when attention is needed. Dismissing it does not clear tasks. With the
+portal visible/open, it refreshes every 30 seconds and shows new-lead notices.
+Background/closed-browser email, SMS and mobile push are NOT connected in v11.
+No fake success/offline fallback is used: failed submissions keep customer entries
+and explain that a save was not confirmed. Do not assume a timed-out request was
+not received; search for the customer before manually creating another lead.
+
+NEXT OPERATIONAL PRIORITIES
+Confirm backups and practice a restore. Replace any widely shared temporary
+credentials using a controlled account-management process; this update does not
+add self-service password reset. Finalize your actual privacy/contact language
+and provider-authorized marketing before broad public promotion. Agree payout
+eligibility/holding periods and a reversal procedure. Add verified email/SMS
+notifications later when sender details and consent/workflow rules are settled.
+
+SUPPORT
+For a website bug or error, contact Developer Moe Nokaira at
+Core Retail Management Inc. (CRM).

@@ -1,4 +1,4 @@
-GetNetDirect Portal Permissions - v10
+GetNetDirect Portal Permissions - v11
 
 ADMIN / MANAGEMENT
 - View every lead
@@ -32,3 +32,14 @@ If unreachable: Unable to Reach
 If service cannot be provided: Admin uses Not Serviceable
 If an order later cancels: Admin uses Cancelled
 Duplicates/tests/fake/invalid records: Admin uses Void
+
+V11 ADDITIONS
+Admin alone can open Reports & Trends, read all activity, review partner applications
+and activate/deactivate team/partner access in the shared database.
+Employees cannot reopen or alter Admin-finalized Complete, Cancelled, Void or
+Not Serviceable leads. Existing assigned sales-progress permissions are preserved.
+Admin and the assigned rep can log contact outcomes on open leads. Partners cannot.
+An outdated lead editor is rejected instead of silently overwriting newer changes.
+Payout Approved/Paid transitions require a verified Complete partner referral and
+a positive amount; Paid also requires the paid date and payment reference.
+These record-keeping functions do not send actual money or integrate payroll.

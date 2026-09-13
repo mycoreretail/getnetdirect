@@ -1,0 +1,31 @@
+GETNETDIRECT v11 — LOCAL VALIDATION SCOPE
+
+PASSED
+- 20 pure-logic tests: 24/48-hour thresholds, closed-lead exclusion, real-activity
+  clock vs administrative edits, future/date-only follow-ups, verification clock,
+  missed installation, Eastern/UTC dates, daylight-saving boundaries, leap days,
+  short months, matched comparison cutoffs, missing event dates, zero baselines,
+  Void exclusions and current-owner filters.
+- 15 API handler/permission contract tests: exact CORS origins; employee final and
+  payout restrictions; no reopening finalized leads; assigned-owner checks; stale
+  edit conflicts; signup/review timestamps; administrative edits not resetting
+  activity; payout verification/reference requirements; public QR assignment;
+  single-service retention; bad dates; shared deactivation/token invalidation;
+  reports restricted to Admin; existing partner form fields accepted.
+- 48 browser viewport checks: eight pages at 320, 360, 390, 768, 1024 and 1440 px.
+  No uncaught JavaScript errors or unexpected checked control/panel overflow.
+- Browser interactions: urgency filter; versioned lead editor; employee menu
+  restrictions; report chart/grouping/export availability; customer entries kept
+  on simulated failure and cleared on confirmed save; account status calls shared
+  API; incoming-lead notice shown.
+- JavaScript syntax checks and same-package asset/link integrity checks.
+
+IMPORTANT LIMITS
+The tests use simulated customers, mocked network responses and a fake database
+adapter. Chromium rendered the actual HTML/CSS/JS inline; external URL navigation
+was not used. No live accounts, leads or payouts were created/changed for testing.
+The API handler tests are not an actual PostgreSQL migration/SQL integration test.
+The existing external QR library/physical QR scan and real carrier ordering were
+not retested offline. This is not an exhaustive accessibility, security, stress or
+Safari/iPad-hardware certification. The updated frontend/API must be deployed and
+checked together with a fresh two-device referral test before broad rollout.
