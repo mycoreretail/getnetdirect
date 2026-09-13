@@ -1,0 +1,49 @@
+GetNetDirect Portal — Go-Live Checklist
+
+This v7 build improves the user interface and workflow for:
+- Admin / management
+- Employees and contractor sales reps
+- Referral partners (leasing offices, realtors, property managers, etc.)
+
+Status colors are consistent across all three portals.
+
+Lead statuses:
+New
+Assigned
+Contacted
+Follow-Up
+Pending Customer
+Qualified
+Signed Up
+Install Scheduled
+Complete
+Not Interested
+Unable to Reach
+Not Serviceable
+Cancelled
+Void
+
+Payout statuses:
+Not Eligible
+Pending
+Approved
+Paid
+Void
+
+Recommended operating rules:
+1. Void = duplicate, test, fake or invalid lead.
+2. Cancelled = customer had an order/process underway and later cancelled.
+3. Not Interested = customer declined the offer.
+4. Not Serviceable = no supported provider/service was available.
+5. Complete = installation/order is fully complete.
+6. Keep a next follow-up date on every open lead.
+7. Keep partner payout Pending until your eligibility rule is met.
+8. Mark Paid only after payment is actually sent and enter the payment reference.
+
+IMPORTANT BEFORE MULTI-USER GO-LIVE:
+The current GitHub Pages version uses browser localStorage. Data created or changed on one device does not automatically sync to another device. This is fine for testing the interface, but a shared database/backend is required for real employees, contractors and referral partners to work from separate phones/computers.
+
+Recommended live architecture:
+GetNetDirect.com public site -> shared API/database -> Admin Portal / Sales Rep Portal / Partner Portal
+
+Do not collect Social Security numbers, full card information or carrier passwords in these lead forms.

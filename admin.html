@@ -2,53 +2,44 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>GetNetDirect Admin Portal</title>
-  <link rel="stylesheet" href="styles.css?v=6">
+  <link rel="stylesheet" href="styles.css?v=7">
   <script>
     (function(){
       try{
         const raw=localStorage.getItem('gnd_basic_session');
         if(!raw){ location.replace('portal.html?reason=login'); return; }
-        const session=JSON.parse(raw);
-        if(!session || !session.expiresAt || Date.now()>session.expiresAt){
+        const s=JSON.parse(raw);
+        if(!s || !s.expiresAt || Date.now()>s.expiresAt || s.role!=='admin'){
           localStorage.removeItem('gnd_basic_session');
           location.replace('portal.html?reason=login');
-          return;
         }
-        const requiredRole='admin';
-        if(session.role!=='admin' && session.role!==requiredRole){
-          location.replace('portal.html?reason=wrong-role');
-          return;
-        }
-      }catch(e){
-        localStorage.removeItem('gnd_basic_session');
-        location.replace('portal.html?reason=login');
-      }
+      }catch(e){ location.replace('portal.html?reason=login'); }
     })();
   </script>
 </head>
 <body class="dashboard" data-required-role="admin">
-  <div class="dash-nav">
+  <header class="dash-nav">
     <div class="container">
-      <a class="brand" href="index.html"><img src="getnetdirect-logo.png" alt="GetNetDirect"></a>
+      <a class="brand" href="index.html" aria-label="GetNetDirect home"><img src="getnetdirect-logo.png" alt="GetNetDirect"></a>
       <div class="dash-nav-actions">
         <span class="portal-role">Administrator</span>
-        <a class="btn btn-secondary dash-public-btn" href="index.html">Public Website</a><a class="btn btn-secondary dash-portal-btn" href="portal.html">Portal Access</a><button class="btn btn-secondary dash-logout-btn" type="button" data-logout>Log Out</button>
+        <a class="btn btn-secondary dash-public-btn" href="index.html">Website</a>
+        <a class="btn btn-secondary dash-portal-btn" href="portal.html">Portal</a>
+        <button class="btn btn-secondary dash-logout-btn" type="button" data-logout>Log Out</button>
       </div>
     </div>
-  </div>
+  </header>
 
   <div class="container dash-layout">
-    <aside class="sidebar">
+    <nav class="sidebar" aria-label="Admin navigation">
       <a class="side-link active" href="#overview">Overview</a>
-      <a class="side-link" href="#leads">Lead Management</a>
-      <a class="side-link" href="#payouts">Partner Payouts</a>
-      <a class="side-link" href="#employees">Employees</a>
-      <a class="side-link" href="#workflow">Workflow</a>
-      <a class="side-link" href="partner-dashboard.html">Partner Portal Demo</a>
-      <a class="side-link" href="employee-dashboard.html">Employee Portal</a>
-    </aside>
+      <a class="side-link" href="#leads">Leads</a>
+      <a class="side-link" href="#people">Team & Partners</a>
+      <a class="side-link" href="#payouts">Payout Ledger</a>
+      <a class="side-link" href="#recommendations">Recommendations</a>
+    </nav>
 
     <main class="dash-main">
       <section id="overview">
@@ -56,124 +47,109 @@
           <div>
             <span class="portal-kicker">GetNetDirect Operations</span>
             <h1>Admin Portal</h1>
-            <p>Manage customer leads, referral outcomes, partner payouts and your sales team from one place.</p>
+            <p class="dash-intro">Manage leads, employees and contractor sales reps, referral partners, customer outcomes and payouts.</p>
           </div>
-          <button class="btn btn-secondary" id="refreshAdmin" type="button">Refresh Data</button>
+          <button class="btn btn-secondary" id="refreshAdmin" type="button">Refresh</button>
         </div>
 
-        <div class="notice">
-          <strong>Prototype mode:</strong> this version uses browser storage so you can test the workflow. For real employees and partners on different devices, the next step is connecting a secure database and login system.
+        <div class="go-live-banner">
+          <strong>Go-live note:</strong> the interface below is ready for workflow testing. The current GitHub-only build stores data in each browser. A shared database is required before separate employees and leasing/realtor partners can see the same live records from different devices.
         </div>
 
-        <div class="stats admin-stats" style="margin-top:18px">
-          <div class="stat"><div class="label">Total Leads</div><div class="value" id="statLeads">0</div><div class="sub">All lead sources</div></div>
-          <div class="stat"><div class="label">Partner Referrals</div><div class="value" id="statReferrals">0</div><div class="sub">Referral partner leads</div></div>
-          <div class="stat"><div class="label">Signed Up</div><div class="value" id="statSignedUp">0</div><div class="sub">Signed up or installed</div></div>
-          <div class="stat"><div class="label">Unpaid Payouts</div><div class="value" id="statUnpaidPayouts">$0</div><div class="sub">Approved / pending</div></div>
-          <div class="stat"><div class="label">Installed</div><div class="value" id="statInstalled">0</div><div class="sub">Completed installs</div></div>
+        <div class="stats admin-stats">
+          <div class="stat"><div class="label">Total Leads</div><div class="value" id="statLeads">0</div><div class="sub">All sources</div></div>
+          <div class="stat"><div class="label">Open</div><div class="value" id="statOpen">0</div><div class="sub">Needs action</div></div>
+          <div class="stat"><div class="label">Signed Up</div><div class="value" id="statSignedUp">0</div><div class="sub">Won customers</div></div>
+          <div class="stat"><div class="label">Complete</div><div class="value" id="statInstalled">0</div><div class="sub">Completed installs</div></div>
+          <div class="stat"><div class="label">Unpaid Payouts</div><div class="value" id="statUnpaidPayouts">$0</div><div class="sub">Pending + approved</div></div>
         </div>
+      </section>
+
+      <section class="panel status-panel" aria-labelledby="statusLegendHeading">
+        <div class="panel-head"><div><h2 id="statusLegendHeading">Status Color Guide</h2><p class="panel-sub">The same colors are used in Admin, Employee and Referral Partner portals.</p></div></div>
+        <div class="status-legend" id="adminStatusLegend"></div>
       </section>
 
       <section class="panel" id="leads">
         <div class="panel-head panel-head-wrap">
           <div>
             <h2>Lead Management</h2>
-            <p class="panel-sub">Open a lead to assign an employee, update signup status, provider information and referral payout.</p>
+            <p class="panel-sub">Search, assign a rep, set follow-up dates, update signup/install status and manage partner payouts.</p>
           </div>
           <div class="table-tools">
-            <input id="adminLeadSearch" class="tool-input" type="search" placeholder="Search customer, phone, address...">
-            <select id="adminLeadFilter" class="tool-select">
-              <option value="all">All statuses</option>
-              <option>New</option>
-              <option>New Referral</option>
-              <option>Assigned</option>
-              <option>Contacted</option>
-              <option>Qualified</option>
-              <option>Signed Up</option>
-              <option>Install Scheduled</option>
-              <option>Installed</option>
-              <option>Not Signed Up</option>
-              <option>Cancelled</option>
-            </select>
+            <input id="adminLeadSearch" class="tool-input" type="search" placeholder="Search customer, phone, address, code…" aria-label="Search leads">
+            <select id="adminLeadFilter" class="tool-select" aria-label="Filter lead status"></select>
           </div>
         </div>
-        <div class="table-wrap">
+        <div class="desktop-table-only table-wrap">
           <table class="table admin-lead-table">
-            <thead>
-              <tr>
-                <th>Customer</th>
-                <th>Contact</th>
-                <th>Service / Address</th>
-                <th>Source</th>
-                <th>Assigned Rep</th>
-                <th>Status</th>
-                <th>Payout</th>
-                <th></th>
-              </tr>
-            </thead>
+            <thead><tr><th>Customer</th><th>Contact</th><th>Service / Address</th><th>Source</th><th>Assigned Rep</th><th>Status</th><th>Payout</th><th></th></tr></thead>
             <tbody id="adminLeadTableBody"></tbody>
           </table>
+        </div>
+        <div class="mobile-card-list" id="adminLeadCards" aria-live="polite"></div>
+      </section>
+
+      <section class="panel" id="people">
+        <div class="panel-head"><div><h2>Team & Referral Partners</h2><p class="panel-sub">Organize employees, contractor sales reps, leasing offices, real estate agents and other referral sources.</p></div></div>
+
+        <div class="people-grid">
+          <div class="people-column">
+            <h3>Employees / Contractor Sales Reps</h3>
+            <form id="employeeCreateForm" class="compact-create-form">
+              <div class="field"><label>Full Name *</label><input name="name" required></div>
+              <div class="field"><label>Email *</label><input name="email" type="email" required></div>
+              <div class="field"><label>Phone</label><input name="phone" type="tel"></div>
+              <div class="field"><label>Type</label><select name="role"><option>Employee Sales Rep</option><option>Contractor Sales Rep</option><option>Sales Manager</option><option>Customer Service</option><option>Field Sales</option></select></div>
+              <div class="field"><label>Account Status</label><select name="status"><option>Active</option><option>Pending</option><option>Inactive</option></select></div>
+              <div class="field form-action"><button class="btn btn-primary" type="submit">Add Rep</button></div>
+              <div class="form-status employee-status"></div>
+            </form>
+            <div class="table-wrap people-table-wrap"><table class="table people-table"><thead><tr><th>Name</th><th>Type</th><th>Leads</th><th>Status</th><th></th></tr></thead><tbody id="employeeTableBody"></tbody></table></div>
+          </div>
+
+          <div class="people-column">
+            <h3>Referral Partners</h3>
+            <form id="partnerCreateForm" class="compact-create-form">
+              <div class="field"><label>Partner / Business Name *</label><input name="name" required placeholder="Example: Pine Ridge Apartments"></div>
+              <div class="field"><label>Contact Name</label><input name="contactName"></div>
+              <div class="field"><label>Email *</label><input name="email" type="email" required></div>
+              <div class="field"><label>Phone</label><input name="phone" type="tel"></div>
+              <div class="field"><label>Partner Type</label><select name="partnerType"><option>Leasing Office</option><option>Realtor / Real Estate Agent</option><option>Property Manager</option><option>Builder</option><option>Moving Company</option><option>Insurance Agent</option><option>Other</option></select></div>
+              <div class="field"><label>Account Status</label><select name="status"><option>Active</option><option>Pending Approval</option><option>Paused</option><option>Inactive</option></select></div>
+              <div class="field form-action"><button class="btn btn-primary" type="submit">Add Partner</button></div>
+              <div class="form-status partner-status"></div>
+            </form>
+            <div class="table-wrap people-table-wrap"><table class="table people-table"><thead><tr><th>Partner</th><th>Code</th><th>Referrals</th><th>Status</th><th></th></tr></thead><tbody id="partnerTableBody"></tbody></table></div>
+          </div>
         </div>
       </section>
 
       <section class="panel" id="payouts">
-        <div class="panel-head">
-          <div>
-            <h2>Partner Payout Ledger</h2>
-            <p class="panel-sub">A clean ledger showing which referral commissions are pending, approved or already paid.</p>
-          </div>
-          <div class="ledger-totals">
-            <span>Pending: <strong id="ledgerPendingTotal">$0</strong></span>
-            <span>Paid: <strong id="ledgerPaidTotal">$0</strong></span>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table class="table">
-            <thead>
-              <tr><th>Customer</th><th>Partner Code</th><th>Outcome</th><th>Amount</th><th>Payout Status</th><th>Paid Date</th><th>Payment Ref.</th></tr>
-            </thead>
-            <tbody id="payoutLedgerBody"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="panel" id="employees">
         <div class="panel-head panel-head-wrap">
-          <div>
-            <h2>Employee Accounts</h2>
-            <p class="panel-sub">Create a sales rep profile, assign leads to them and give them their own dashboard view.</p>
-          </div>
-          <a class="btn btn-secondary" href="employee-dashboard.html">Open Employee Portal</a>
+          <div><h2>Partner Payout Ledger</h2><p class="panel-sub">Track each referral commission from pending through paid. Use Void for duplicates, test records or disqualified referrals.</p></div>
+          <div class="ledger-totals"><span>Pending: <strong id="ledgerPendingTotal">$0</strong></span><span>Approved: <strong id="ledgerApprovedTotal">$0</strong></span><span>Paid: <strong id="ledgerPaidTotal">$0</strong></span></div>
         </div>
-
-        <form id="employeeCreateForm" class="employee-create-form">
-          <div class="field"><label>Employee Name *</label><input name="name" required placeholder="Full name"></div>
-          <div class="field"><label>Email *</label><input name="email" type="email" required placeholder="name@getnetdirect.com"></div>
-          <div class="field"><label>Phone</label><input name="phone" type="tel"></div>
-          <div class="field"><label>Role</label><select name="role"><option>Sales Representative</option><option>Sales Manager</option><option>Customer Service</option><option>Field Sales</option></select></div>
-          <div class="field employee-create-action"><button class="btn btn-primary" type="submit">Create Employee</button></div>
-          <div class="form-status employee-status"></div>
-        </form>
-
-        <div class="table-wrap" style="margin-top:18px">
-          <table class="table">
-            <thead><tr><th>Employee</th><th>Role</th><th>Contact</th><th>Assigned Leads</th><th>Status</th><th>Portal</th></tr></thead>
-            <tbody id="employeeTableBody"></tbody>
-          </table>
-        </div>
+        <div class="desktop-table-only table-wrap"><table class="table"><thead><tr><th>Customer</th><th>Partner</th><th>Lead Outcome</th><th>Amount</th><th>Payout</th><th>Paid Date</th><th>Reference</th></tr></thead><tbody id="payoutLedgerBody"></tbody></table></div>
+        <div class="mobile-card-list" id="payoutLedgerCards"></div>
       </section>
 
-      <section class="panel" id="workflow">
-        <div class="panel-head"><div><h2>Recommended Lead Workflow</h2><p class="panel-sub">The partner sees the same customer outcome without seeing internal notes or sensitive information.</p></div></div>
-        <div class="workflow-strip">
-          <span>New Referral</span><i>→</i><span>Assigned</span><i>→</i><span>Contacted</span><i>→</i><span>Qualified</span><i>→</i><span>Signed Up</span><i>→</i><span>Install Scheduled</span><i>→</i><span>Installed</span><i>→</i><span>Paid</span>
+      <section class="panel" id="recommendations">
+        <div class="panel-head"><div><h2>Recommended Operating Rules</h2><p class="panel-sub">These rules keep statuses and partner payouts consistent when you add more sales reps and referral sources.</p></div></div>
+        <div class="recommendation-grid">
+          <article class="recommend-card"><strong>Use Void for bad records</strong><p>Duplicates, test leads, fake submissions and records entered by mistake should be Void — not Cancelled.</p></article>
+          <article class="recommend-card"><strong>Use Cancelled after an order</strong><p>Use Cancelled when a customer started or completed an order and later cancelled it.</p></article>
+          <article class="recommend-card"><strong>Use Not Interested separately</strong><p>This makes your conversion reporting more accurate than grouping every lost customer under Cancelled.</p></article>
+          <article class="recommend-card"><strong>Approve payout after eligibility</strong><p>Keep partner payout Pending until your payout rule is met, then Approved, then Paid with date and payment reference.</p></article>
+          <article class="recommend-card"><strong>Set a next follow-up date</strong><p>Every open lead should have a next action date so leads do not disappear in the dashboard.</p></article>
+          <article class="recommend-card"><strong>One account per person/business</strong><p>Each employee, contractor rep, leasing office or realtor should have their own account so attribution stays clean.</p></article>
         </div>
       </section>
     </main>
   </div>
 
   <div id="toast" class="toast" aria-live="polite"></div>
-  <script src="auth.js?v=6"></script>
-<script src="script.js?v=6"></script>
+  <script src="auth.js?v=7"></script>
+  <script src="script.js?v=7"></script>
 </body>
 </html>

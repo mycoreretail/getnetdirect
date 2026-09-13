@@ -1,258 +1,197 @@
 (function(){
+  'use strict';
   const $=(s,r=document)=>r.querySelector(s);
-  const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+  const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+
   const STORE_DIRECT='gnd_customer_leads';
   const STORE_REF='gnd_partner_referrals';
   const STORE_EMP='gnd_employees';
+  const STORE_PARTNERS='gnd_partners';
 
-  const year=$('[data-year]'); if(year) year.textContent=new Date().getFullYear();
-  const menu=$('.menu-btn');
-  if(menu) menu.addEventListener('click',()=>{
-    const links=$('.nav-links'); if(!links)return;
-    const open=links.classList.toggle('open');
-    menu.setAttribute('aria-expanded',open?'true':'false');
-    menu.textContent=open?'✕':'☰';
-  });
-  $$('.nav-links a').forEach(a=>a.addEventListener('click',()=>{
-    const links=$('.nav-links'); if(links)links.classList.remove('open');
-    if(menu){menu.setAttribute('aria-expanded','false');menu.textContent='☰';}
-  }));
+  const LEAD_STATUSES=[
+    'New','Assigned','Contacted','Follow-Up','Pending Customer','Qualified','Signed Up','Install Scheduled','Complete','Not Interested','Unable to Reach','Not Serviceable','Cancelled','Void'
+  ];
+  const PAYOUT_STATUSES=['Not Eligible','Pending','Approved','Paid','Void'];
+  const PROVIDERS=['','AT&T','Verizon','Spectrum','Frontier','Optimum','Xfinity','T-Mobile','Other'];
+  const PRIORITIES=['Normal','High','Urgent'];
+  const OPEN_STATUSES=new Set(['New','Assigned','Contacted','Follow-Up','Pending Customer','Qualified','Unable to Reach']);
+  const WON_STATUSES=new Set(['Signed Up','Install Scheduled','Complete']);
+  const PROGRESS_STATUSES=new Set(['Contacted','Follow-Up','Pending Customer','Qualified','Signed Up','Install Scheduled','Complete']);
 
-  // Service-interest cards: 'Not Sure' acts as an exclusive choice.
-  $$('.service-choice-grid').forEach(grid=>{
-    const boxes=$$('input[type="checkbox"][name="services"]',grid);
-    boxes.forEach(box=>box.addEventListener('change',()=>{
-      if(!box.checked)return;
-      if(box.value==='Not Sure') boxes.forEach(other=>{if(other!==box)other.checked=false;});
-      else boxes.forEach(other=>{if(other.value==='Not Sure')other.checked=false;});
-    }));
-  });
+  const STATUS_META={
+    'New':{cls:'st-new',label:'New'},
+    'Assigned':{cls:'st-assigned',label:'Assigned'},
+    'Contacted':{cls:'st-contacted',label:'Contacted'},
+    'Follow-Up':{cls:'st-followup',label:'Follow-Up'},
+    'Pending Customer':{cls:'st-pending',label:'Pending Customer'},
+    'Qualified':{cls:'st-qualified',label:'Qualified'},
+    'Signed Up':{cls:'st-signed',label:'Signed Up'},
+    'Install Scheduled':{cls:'st-scheduled',label:'Install Scheduled'},
+    'Complete':{cls:'st-complete',label:'Complete'},
+    'Not Interested':{cls:'st-lost',label:'Not Interested'},
+    'Unable to Reach':{cls:'st-unreachable',label:'Unable to Reach'},
+    'Not Serviceable':{cls:'st-unserviceable',label:'Not Serviceable'},
+    'Cancelled':{cls:'st-cancelled',label:'Cancelled'},
+    'Void':{cls:'st-void',label:'Void'}
+  };
+  const PAYOUT_META={
+    'Not Eligible':{cls:'pay-none'},'Pending':{cls:'pay-pending'},'Approved':{cls:'pay-approved'},'Paid':{cls:'pay-paid'},'Void':{cls:'pay-void'}
+  };
+  const ACCOUNT_META={
+    'Active':'acct-active','Pending':'acct-pending','Pending Approval':'acct-pending','Paused':'acct-paused','Inactive':'acct-inactive'
+  };
 
-  // Keep the mobile navigation from remaining open after layout changes.
-  window.addEventListener('resize',()=>{
-    if(window.innerWidth>980){
-      const links=$('.nav-links'); if(links)links.classList.remove('open');
-      if(menu){menu.setAttribute('aria-expanded','false');menu.textContent='☰';}
-    }
-  });
-
-  const params=new URLSearchParams(location.search);
-  const ref=params.get('ref')||localStorage.getItem('gnd_ref')||'';
-  if(params.get('ref')) localStorage.setItem('gnd_ref',params.get('ref'));
-  $$('[data-ref-field]').forEach(el=>{if(ref) el.value=ref;});
-  $$('[data-ref-display]').forEach(el=>{el.textContent=ref||'Direct';});
+  const SERVICE_ICONS={
+    'Internet':'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.9 9.3a11.2 11.2 0 0 1 14.2 0M7.8 12.5a6.9 6.9 0 0 1 8.4 0M10.5 15.7a2.7 2.7 0 0 1 3 0M12 19h.01"/></svg>',
+    'Mobile':'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M10 5h4M11.5 18.5h1"/></svg>',
+    'TV':'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="M8 21h8M12 18v3"/></svg>',
+    'Home Phone':'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 3.8 4.9 5.5c-.8.6-1.1 1.7-.7 2.6 2.1 5.2 6.5 9.6 11.7 11.7.9.4 2 0 2.6-.7l1.7-2.3c.5-.7.4-1.7-.3-2.2l-2.8-2.1c-.6-.4-1.4-.4-1.9.1l-1.5 1.3a14.4 14.4 0 0 1-3.6-3.6l1.3-1.5c.5-.6.5-1.4.1-1.9L9.4 4.1c-.5-.7-1.5-.8-2.2-.3Z"/></svg>',
+    'Business Internet':'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V6l8-3 8 3v15M8 9h2M14 9h2M8 13h2M14 13h2M9 21v-4h6v4"/></svg>',
+    'Not Sure':'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.4 2.4 0 1 1 3.4 2.2c-.8.4-1.2.9-1.2 1.8M12 17h.01"/></svg>'
+  };
 
   function arr(key){try{return JSON.parse(localStorage.getItem(key)||'[]')}catch(e){return[]}}
   function put(key,value){localStorage.setItem(key,JSON.stringify(value))}
-  function id(prefix){return prefix+'-'+Math.random().toString(36).slice(2,6).toUpperCase()+Date.now().toString().slice(-4)}
-  function esc(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
-  function money(v){const n=Number(v||0);return n.toLocaleString('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2})}
-  function dateOnly(v){if(!v)return'—';const d=new Date(v.length===10?v+'T12:00:00':v);return isNaN(d)?'—':d.toLocaleDateString()}
+  function id(prefix){return prefix+'-'+Math.random().toString(36).slice(2,6).toUpperCase()+Date.now().toString().slice(-5)}
+  function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+  function money(v){return Number(v||0).toLocaleString('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2})}
+  function dateOnly(v){if(!v)return'—';const d=new Date(String(v).length===10?v+'T12:00:00':v);return isNaN(d)?'—':d.toLocaleDateString()}
   function phoneHref(v){return String(v||'').replace(/[^0-9+]/g,'')}
-  function formData(form){const fd=new FormData(form),out={};for(const[k,v]of fd.entries()){if(out[k])out[k]=Array.isArray(out[k])?[...out[k],v]:[out[k],v];else out[k]=v;}return out}
-  function save(key,obj){const a=arr(key);a.unshift(obj);put(key,a);return a}
-  function setStatus(form,msg,type='success'){const s=$('.form-status',form);if(!s)return;s.className='form-status '+type;s.textContent=msg;s.style.display='block';}
-  function toast(msg){const t=$('#toast');if(!t)return;t.textContent=msg;t.classList.add('show');clearTimeout(window.__gndToast);window.__gndToast=setTimeout(()=>t.classList.remove('show'),2200)}
-  function allLeads(){
-    return [
-      ...arr(STORE_DIRECT).map(x=>({...x,_storeKey:STORE_DIRECT,_partner:false})),
-      ...arr(STORE_REF).map(x=>({...x,_storeKey:STORE_REF,_partner:true}))
-    ].sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
-  }
-  function updateLead(leadId,updates){
-    for(const key of [STORE_DIRECT,STORE_REF]){
-      const data=arr(key);const i=data.findIndex(x=>x.id===leadId);
-      if(i>=0){data[i]={...data[i],...updates,updatedAt:new Date().toISOString()};put(key,data);return data[i];}
-    }
-    return null;
-  }
-  function getEmployees(){return arr(STORE_EMP)}
-  function employeeName(empId){const e=getEmployees().find(x=>x.id===empId);return e?e.name:'Unassigned'}
+  function formData(form){const fd=new FormData(form),o={};for(const [k,v] of fd.entries()){if(o[k]!==undefined)o[k]=Array.isArray(o[k])?[...o[k],v]:[o[k],v];else o[k]=v}return o}
+  function setStatus(form,msg,type='success'){const s=$('.form-status',form);if(!s)return;s.className='form-status '+type;s.textContent=msg;s.style.display='block'}
+  function toast(msg){const t=$('#toast');if(!t)return;t.textContent=msg;t.classList.add('show');clearTimeout(window.__gndToast);window.__gndToast=setTimeout(()=>t.classList.remove('show'),2400)}
+  function normalizeStatus(s){const m={'Installed':'Complete','New Referral':'New','Not Signed Up':'Not Interested'};return m[s]||s||'New'}
+  function statusMeta(s){return STATUS_META[normalizeStatus(s)]||STATUS_META.New}
+  function statusBadge(s){const n=normalizeStatus(s),m=statusMeta(n);return `<span class="status-badge ${m.cls}">${esc(m.label)}</span>`}
+  function payoutBadge(s){const n=s||'Not Eligible';return `<span class="status-badge ${PAYOUT_META[n]?.cls||'pay-none'}">${esc(n)}</span>`}
+  function accountBadge(s){const n=s||'Active';return `<span class="status-badge ${ACCOUNT_META[n]||'acct-inactive'}">${esc(n)}</span>`}
+  function isOpen(x){return OPEN_STATUSES.has(normalizeStatus(x.status))}
+  function isWon(x){return WON_STATUSES.has(normalizeStatus(x.status))}
   function serviceText(x){return Array.isArray(x.services)?x.services.join(', '):(x.services||x.service||'—')}
-  function addressText(x){return [x.address,x.unit?('Unit '+x.unit):'',x.city,x.state,x.zip].filter(Boolean).join(', ')}
-  function statusClass(status){
-    const s=String(status||'').toLowerCase();
-    if(s.includes('installed'))return'installed';
-    if(s.includes('signed up'))return'signed';
-    if(s.includes('scheduled'))return'scheduled';
-    if(s.includes('qualified'))return'qualified';
-    if(s.includes('assigned'))return'assigned';
-    if(s.includes('contact'))return'contact';
-    if(s.includes('not signed'))return'not-signed';
-    if(s.includes('cancel'))return'cancel';
-    return'new';
-  }
-  function payoutClass(status){
-    const s=String(status||'').toLowerCase();
-    if(s==='paid')return'paid-pay';
-    if(s==='approved')return'approved-pay';
-    if(s==='pending')return'pending-pay';
-    return'none-pay';
-  }
-  function isWon(x){return['Signed Up','Install Scheduled','Installed'].includes(x.status)}
-  function isOpen(x){return !['Installed','Not Signed Up','Cancelled'].includes(x.status)}
-  function partnerSource(x){return x._partner ? (x.source||x.partnerCode||'Partner') : (x.source&&x.source!=='Direct'?x.source:'')}
-  const LEAD_STATUSES=['New','New Referral','Assigned','Contacted','Qualified','Signed Up','Install Scheduled','Installed','Not Signed Up','Cancelled'];
-  const PAYOUT_STATUSES=['Not Set','Pending','Approved','Paid'];
-  const PROVIDERS=['','AT&T','Verizon','Spectrum','Frontier','Optimum','Xfinity','T-Mobile','Other'];
-  function options(list,current){return list.map(v=>`<option value="${esc(v)}"${String(v)===String(current||'')?' selected':''}>${esc(v||'Select')}</option>`).join('')}
-  function employeeOptions(current){
-    const employees=getEmployees().filter(e=>e.status!=='Inactive');
-    return `<option value="">Unassigned</option>`+employees.map(e=>`<option value="${esc(e.id)}"${e.id===current?' selected':''}>${esc(e.name)}</option>`).join('');
-  }
+  function addressText(x){return [x.address,x.unit?`Unit ${x.unit}`:'',x.city,x.state,x.zip].filter(Boolean).join(', ')}
+  function partnerSource(x){return x._partner?(x.source||x.partnerCode||'Partner'):(x.source&&x.source!=='Direct'?x.source:'Direct')}
+  function getEmployees(){return arr(STORE_EMP)}
+  function getPartners(){return arr(STORE_PARTNERS)}
+  function employeeName(empId){return getEmployees().find(e=>e.id===empId)?.name||'Unassigned'}
+  function partnerName(code){const p=getPartners().find(x=>x.code===code);return p?.name||code||'Partner'}
+  function allLeads(){return [...arr(STORE_DIRECT).map(x=>({...x,status:normalizeStatus(x.status),_storeKey:STORE_DIRECT,_partner:false})),...arr(STORE_REF).map(x=>({...x,status:normalizeStatus(x.status),_storeKey:STORE_REF,_partner:true}))].sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0))}
+  function save(key,obj){const a=arr(key);a.unshift(obj);put(key,a);return a}
+  function updateLead(leadId,updates){for(const key of [STORE_DIRECT,STORE_REF]){const a=arr(key),i=a.findIndex(x=>x.id===leadId);if(i>=0){a[i]={...a[i],...updates,status:normalizeStatus(updates.status||a[i].status),updatedAt:new Date().toISOString()};put(key,a);return a[i]}}return null}
+  function options(list,current,firstLabel){let h=firstLabel?`<option value="">${esc(firstLabel)}</option>`:'';return h+list.map(v=>`<option value="${esc(v)}"${String(v)===String(current||'')?' selected':''}>${esc(v)}</option>`).join('')}
+  function employeeOptions(current){const emps=getEmployees().filter(e=>e.status!=='Inactive');return `<option value="">Unassigned</option>`+emps.map(e=>`<option value="${esc(e.id)}"${e.id===current?' selected':''}>${esc(e.name)} — ${esc(e.role||'Sales Rep')}</option>`).join('')}
+  function codeFromName(name){const words=String(name||'PARTNER').toUpperCase().replace(/[^A-Z0-9 ]/g,'').trim().split(/\s+/).filter(Boolean);const base=(words.map(w=>w[0]).join('')+(words[0]||'PART')).slice(0,6);let code=(base||'PART')+Math.floor(10+Math.random()*90);const existing=new Set(getPartners().map(p=>p.code));while(existing.has(code))code=(base||'PART')+Math.floor(100+Math.random()*900);return code}
+  function duplicateSet(leads){const map=new Map(),dupes=new Set();leads.forEach(x=>{const keys=[String(x.phone||'').replace(/\D/g,''),String(x.address||'').trim().toLowerCase()].filter(k=>k.length>5);keys.forEach(k=>{if(map.has(k)){dupes.add(x.id);dupes.add(map.get(k))}else map.set(k,x.id)})});return dupes}
 
-  /* Public customer forms */
-  const customer=$('#customerForm');
-  if(customer) customer.addEventListener('submit',e=>{
-    e.preventDefault();if(!customer.reportValidity())return;
-    const data=formData(customer);data.id=id('GND');data.createdAt=new Date().toISOString();data.status='New';data.source=data.referralCode||ref||'Direct';
-    save(STORE_DIRECT,data);setStatus(customer,`Thank you — your request was received. Reference ${data.id}. A connection specialist can follow up using the contact information you provided.`);customer.reset();$$('[data-ref-field]').forEach(el=>{if(ref)el.value=ref});
-  });
+  function renderLegend(targetId,compact=false){const el=$('#'+targetId);if(!el)return;const statuses=compact?['New','Contacted','Follow-Up','Signed Up','Install Scheduled','Complete','Cancelled','Void']:LEAD_STATUSES;el.innerHTML=statuses.map(s=>statusBadge(s)).join('')}
 
-  const fullCustomer=$('#customerForm2');
-  if(fullCustomer){const btn=$('#submitFullCustomer');if(btn)btn.addEventListener('click',()=>{
-    if(!fullCustomer.reportValidity())return;const data=formData(fullCustomer);data.id=id('GND');data.createdAt=new Date().toISOString();data.status='New';data.source=data.referralCode||ref||'Direct';
-    save(STORE_DIRECT,data);setStatus(fullCustomer,`Thank you — your request was received. Reference ${data.id}. A connection specialist can follow up using the contact information you provided.`);fullCustomer.reset();$$('[data-ref-field]').forEach(el=>{if(ref)el.value=ref});
-  });}
+  /* Global navigation */
+  const year=$('[data-year]');if(year)year.textContent=new Date().getFullYear();
+  const menu=$('.menu-btn');if(menu)menu.addEventListener('click',()=>{const links=$('.nav-links');if(!links)return;const open=links.classList.toggle('open');menu.setAttribute('aria-expanded',open?'true':'false');menu.textContent=open?'✕':'☰'});
+  $$('.nav-links a').forEach(a=>a.addEventListener('click',()=>{$('.nav-links')?.classList.remove('open');if(menu){menu.setAttribute('aria-expanded','false');menu.textContent='☰'}}));
 
-  const partnerApply=$('#partnerApplyForm');
-  if(partnerApply) partnerApply.addEventListener('submit',e=>{
-    e.preventDefault();if(!partnerApply.reportValidity())return;const data=formData(partnerApply);data.id=id('PART');data.createdAt=new Date().toISOString();data.status='Pending Review';save('gnd_partner_applications',data);setStatus(partnerApply,`Application received. Reference ${data.id}. We will review your partner request and contact you.`);partnerApply.reset();
-  });
+  /* Service choice behavior */
+  function wireServiceChoices(root=document){$$('.service-choice-grid',root).forEach(grid=>{const boxes=$$('input[type="checkbox"][name="services"]',grid);boxes.forEach(box=>{if(box.dataset.wired)return;box.dataset.wired='1';box.addEventListener('change',()=>{if(!box.checked)return;if(box.value==='Not Sure')boxes.forEach(o=>{if(o!==box)o.checked=false});else boxes.forEach(o=>{if(o.value==='Not Sure')o.checked=false})})})})}
+  function serviceChoiceMarkup(){return Object.entries(SERVICE_ICONS).map(([name,icon])=>`<label class="service-choice"><input type="checkbox" name="services" value="${esc(name)}"><span class="service-choice-icon">${icon}</span><span class="service-choice-label">${esc(name==='Mobile'?'Mobile / Cell':name==='Business Internet'?'Business':name)}</span><span class="service-choice-check">✓</span></label>`).join('')}
+  if($('#partnerServicesGrid'))$('#partnerServicesGrid').innerHTML=serviceChoiceMarkup();wireServiceChoices();
+
+  /* Referral attribution */
+  const params=new URLSearchParams(location.search);const ref=params.get('ref')||localStorage.getItem('gnd_ref')||'';if(params.get('ref'))localStorage.setItem('gnd_ref',params.get('ref'));$$('[data-ref-field]').forEach(el=>{if(ref)el.value=ref});
+
+  /* Public lead forms */
+  function submitPublic(form,full=false){if(!form.reportValidity())return;const d=formData(form);d.id=id('GND');d.createdAt=new Date().toISOString();d.status='New';d.priority='Normal';d.source=d.referralCode||ref||'Direct';d.payoutStatus='Not Eligible';save(STORE_DIRECT,d);setStatus(form,`Thank you — request ${d.id} was received. A GetNetDirect representative can follow up using the contact information provided.`);form.reset();$$('[data-ref-field]').forEach(el=>{if(ref)el.value=ref});wireServiceChoices(form)}
+  $('#customerForm')?.addEventListener('submit',e=>{e.preventDefault();submitPublic(e.currentTarget)});
+  $('#submitFullCustomer')?.addEventListener('click',()=>submitPublic($('#customerForm2'),true));
+  $('#partnerApplyForm')?.addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;if(!f.reportValidity())return;const d=formData(f);d.id=id('PARTAPP');d.createdAt=new Date().toISOString();d.status='Pending Approval';save('gnd_partner_applications',d);setStatus(f,`Partner application ${d.id} was received.`);f.reset()});
 
   /* Partner portal */
-  function currentPartnerCode(){
-    const q=params.get('partner');
-    if(q){localStorage.setItem('gnd_partner_code',q);return q}
-    return localStorage.getItem('gnd_partner_code')||'DEMO123';
-  }
+  function currentPartnerCode(){const session=window.GNDAuth?.getSession?.();const q=params.get('partner');if(q){localStorage.setItem('gnd_partner_code',q);return q}if(session?.partnerCode)return session.partnerCode;return localStorage.getItem('gnd_partner_code')||'DEMO123'}
   const partnerCode=currentPartnerCode();
-  const codeDisplay=$('#partnerCodeDisplay'),linkDisplay=$('#partnerLinkDisplay'),codeField=$('#partnerCodeField');
-  if(codeDisplay)codeDisplay.textContent=partnerCode;
-  if(linkDisplay)linkDisplay.textContent=`https://getnetdirect.com/?ref=${partnerCode}`;
-  if(codeField)codeField.value=partnerCode;
-  const copyPartnerLink=$('#copyPartnerLink');
-  if(copyPartnerLink)copyPartnerLink.addEventListener('click',async()=>{const text=`https://getnetdirect.com/?ref=${partnerCode}`;try{await navigator.clipboard.writeText(text);toast('Referral link copied')}catch(e){toast(text)}});
-
-  const referral=$('#referralForm');
-  if(referral) referral.addEventListener('submit',e=>{
-    e.preventDefault();if(!referral.reportValidity())return;
-    const data=formData(referral);data.id=id('REF');data.createdAt=new Date().toISOString();data.status='New Referral';data.source=data.partnerCode||partnerCode;data.payoutAmount=0;data.payoutStatus='Not Set';
-    save(STORE_REF,data);setStatus(referral,`Referral submitted successfully. Confirmation ${data.id}.`);referral.reset();if(codeField)codeField.value=partnerCode;renderPartner();
-  });
+  if($('#partnerCodeDisplay'))$('#partnerCodeDisplay').textContent=partnerCode;if($('#partnerLinkDisplay'))$('#partnerLinkDisplay').textContent=`https://getnetdirect.com/?ref=${partnerCode}`;if($('#partnerCodeField'))$('#partnerCodeField').value=partnerCode;
+  $('#copyPartnerLink')?.addEventListener('click',async()=>{const txt=`https://getnetdirect.com/?ref=${partnerCode}`;try{await navigator.clipboard.writeText(txt);toast('Referral link copied')}catch(e){toast(txt)}});
+  $('#referralForm')?.addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;if(!f.reportValidity())return;const d=formData(f);d.id=id('REF');d.createdAt=new Date().toISOString();d.status='New';d.priority='Normal';d.source=d.partnerCode||partnerCode;d.payoutAmount=0;d.payoutStatus='Not Eligible';save(STORE_REF,d);setStatus(f,`Referral ${d.id} submitted successfully.`);f.reset();$('#partnerCodeField').value=partnerCode;wireServiceChoices(f);renderPartner()});
 
   function renderPartner(){
-    const history=$('#partnerHistoryBody');if(!history)return;
-    const leads=arr(STORE_REF).filter(x=>(x.source||x.partnerCode)===partnerCode).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
-    const won=leads.filter(isWon).length;const pending=leads.filter(isOpen).length;const approved=leads.filter(x=>x.payoutStatus==='Approved').reduce((s,x)=>s+Number(x.payoutAmount||0),0);const paid=leads.filter(x=>x.payoutStatus==='Paid').reduce((s,x)=>s+Number(x.payoutAmount||0),0);
-    if($('#partnerStatReferrals'))$('#partnerStatReferrals').textContent=leads.length;
-    if($('#partnerStatSigned'))$('#partnerStatSigned').textContent=won;
-    if($('#partnerStatPending'))$('#partnerStatPending').textContent=pending;
-    if($('#partnerStatApproved'))$('#partnerStatApproved').textContent=money(approved);
-    if($('#partnerPaidTotal'))$('#partnerPaidTotal').textContent=money(paid);
-    history.innerHTML=leads.length?leads.map(x=>`<tr><td><strong>${esc((x.firstName||'')+' '+(x.lastName||''))}</strong><br><span class="muted-inline">${esc(x.id||'')}</span></td><td>${dateOnly(x.createdAt)}</td><td>${esc(serviceText(x))}</td><td>${dateOnly(x.moveIn)}</td><td><span class="badge ${statusClass(x.status)}">${esc(x.status||'New Referral')}</span></td><td>${Number(x.payoutAmount||0)>0?`<span class="money">${money(x.payoutAmount)}</span><br><span class="badge ${payoutClass(x.payoutStatus)}">${esc(x.payoutStatus||'Not Set')}</span>`:'—'}</td></tr>`).join(''):`<tr><td colspan="6" class="empty-state">No referrals submitted under code ${esc(partnerCode)} yet.</td></tr>`;
-    const pbody=$('#partnerPayoutBody');if(pbody){
-      const payouts=leads.filter(x=>Number(x.payoutAmount||0)>0||x.payoutStatus&&x.payoutStatus!=='Not Set');
-      pbody.innerHTML=payouts.length?payouts.map(x=>`<tr${x.payoutStatus==='Paid'?' class="paid-row"':''}><td><strong>${esc((x.firstName||'')+' '+(x.lastName||''))}</strong></td><td><span class="badge ${statusClass(x.status)}">${esc(x.status||'—')}</span></td><td class="money">${money(x.payoutAmount)}</td><td><span class="badge ${payoutClass(x.payoutStatus)}">${esc(x.payoutStatus||'Not Set')}</span></td><td>${dateOnly(x.payoutPaidDate)}</td><td>${esc(x.payoutReference||'—')}</td></tr>`).join(''):'<tr><td colspan="6" class="empty-state">No payout entries yet.</td></tr>';
-    }
+    if(!$('#partnerHistoryBody')&&!$('#partnerHistoryCards'))return;
+    renderLegend('partnerStatusLegend',true);
+    const leads=arr(STORE_REF).map(x=>({...x,status:normalizeStatus(x.status)})).filter(x=>(x.source||x.partnerCode)===partnerCode).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+    const won=leads.filter(isWon).length,pending=leads.filter(isOpen).length,approved=leads.filter(x=>x.payoutStatus==='Approved').reduce((s,x)=>s+Number(x.payoutAmount||0),0),paid=leads.filter(x=>x.payoutStatus==='Paid').reduce((s,x)=>s+Number(x.payoutAmount||0),0);
+    if($('#partnerStatReferrals'))$('#partnerStatReferrals').textContent=leads.length;if($('#partnerStatSigned'))$('#partnerStatSigned').textContent=won;if($('#partnerStatPending'))$('#partnerStatPending').textContent=pending;if($('#partnerStatApproved'))$('#partnerStatApproved').textContent=money(approved);if($('#partnerPaidTotal'))$('#partnerPaidTotal').textContent=money(paid);
+    const rows=leads.length?leads.map(x=>`<tr><td><strong>${esc((x.firstName||'')+' '+(x.lastName||''))}</strong><br><span class="muted-inline">${esc(x.id)}</span></td><td>${dateOnly(x.createdAt)}</td><td>${esc(serviceText(x))}</td><td>${dateOnly(x.moveIn)}</td><td>${statusBadge(x.status)}</td><td>${payoutBadge(x.payoutStatus||'Not Eligible')}</td></tr>`).join(''):'<tr><td colspan="6" class="empty-state">No referrals submitted yet.</td></tr>';
+    if($('#partnerHistoryBody'))$('#partnerHistoryBody').innerHTML=rows;
+    if($('#partnerHistoryCards'))$('#partnerHistoryCards').innerHTML=leads.length?leads.map(x=>`<article class="mobile-data-card"><div class="mobile-card-head"><div><strong>${esc((x.firstName||'')+' '+(x.lastName||''))}</strong><span>${esc(x.id)} · ${dateOnly(x.createdAt)}</span></div>${statusBadge(x.status)}</div><dl><div><dt>Service</dt><dd>${esc(serviceText(x))}</dd></div><div><dt>Move-In</dt><dd>${dateOnly(x.moveIn)}</dd></div><div><dt>Payout</dt><dd>${payoutBadge(x.payoutStatus||'Not Eligible')}</dd></div></dl></article>`).join(''):'<div class="empty-card">No referrals submitted yet.</div>';
+    const pRows=leads.filter(x=>Number(x.payoutAmount||0)>0||!['Not Eligible',undefined,''].includes(x.payoutStatus));
+    if($('#partnerPayoutBody'))$('#partnerPayoutBody').innerHTML=pRows.length?pRows.map(x=>`<tr><td><strong>${esc((x.firstName||'')+' '+(x.lastName||''))}</strong></td><td>${statusBadge(x.status)}</td><td class="money">${money(x.payoutAmount)}</td><td>${payoutBadge(x.payoutStatus)}</td><td>${dateOnly(x.payoutPaidDate)}</td><td>${esc(x.payoutReference||'—')}</td></tr>`).join(''):'<tr><td colspan="6" class="empty-state">No payout entries yet.</td></tr>';
+    if($('#partnerPayoutCards'))$('#partnerPayoutCards').innerHTML=pRows.length?pRows.map(x=>`<article class="mobile-data-card"><div class="mobile-card-head"><div><strong>${esc((x.firstName||'')+' '+(x.lastName||''))}</strong><span>${money(x.payoutAmount)}</span></div>${payoutBadge(x.payoutStatus)}</div><dl><div><dt>Lead Outcome</dt><dd>${statusBadge(x.status)}</dd></div><div><dt>Paid Date</dt><dd>${dateOnly(x.payoutPaidDate)}</dd></div><div><dt>Reference</dt><dd>${esc(x.payoutReference||'—')}</dd></div></dl></article>`).join(''):'<div class="empty-card">No payout entries yet.</div>';
   }
-  renderPartner();
 
   /* Admin portal */
-  function renderAdmin(){
-    const body=$('#adminLeadTableBody');if(!body)return;
-    const leads=allLeads();const direct=arr(STORE_DIRECT),refs=arr(STORE_REF);
-    const search=String($('#adminLeadSearch')?.value||'').trim().toLowerCase();const filter=$('#adminLeadFilter')?.value||'all';
-    const filtered=leads.filter(x=>{
-      const hay=[x.firstName,x.lastName,x.phone,x.email,x.address,x.city,x.source,serviceText(x)].join(' ').toLowerCase();
-      return(!search||hay.includes(search))&&(filter==='all'||x.status===filter);
-    });
-    const unpaid=refs.filter(x=>['Pending','Approved'].includes(x.payoutStatus)).reduce((s,x)=>s+Number(x.payoutAmount||0),0);
-    if($('#statLeads'))$('#statLeads').textContent=leads.length;
-    if($('#statReferrals'))$('#statReferrals').textContent=refs.length;
-    if($('#statSignedUp'))$('#statSignedUp').textContent=leads.filter(isWon).length;
-    if($('#statUnpaidPayouts'))$('#statUnpaidPayouts').textContent=money(unpaid);
-    if($('#statInstalled'))$('#statInstalled').textContent=leads.filter(x=>x.status==='Installed').length;
+  function leadDetailForm(x){
+    return `<form class="admin-lead-form" data-lead-id="${esc(x.id)}"><div class="lead-detail-grid">
+      <div class="field"><label>Status</label><select name="status">${options(LEAD_STATUSES,normalizeStatus(x.status))}</select></div>
+      <div class="field"><label>Priority</label><select name="priority">${options(PRIORITIES,x.priority||'Normal')}</select></div>
+      <div class="field"><label>Assigned Rep</label><select name="assignedEmployee">${employeeOptions(x.assignedEmployee)}</select></div>
+      <div class="field"><label>Next Follow-Up</label><input name="nextFollowUp" type="date" value="${esc(x.nextFollowUp||'')}"></div>
+      <div class="field"><label>Provider</label><select name="provider">${options(PROVIDERS,x.provider||'','Select provider')}</select></div>
+      <div class="field"><label>Order / Confirmation #</label><input name="orderNumber" value="${esc(x.orderNumber||'')}"></div>
+      <div class="field"><label>Install Date</label><input name="installDate" type="date" value="${esc(x.installDate||'')}"></div>
+      <div class="field"><label>Partner Payout</label><input name="payoutAmount" inputmode="decimal" type="number" min="0" step="0.01" value="${esc(x.payoutAmount||0)}"></div>
+      <div class="field"><label>Payout Status</label><select name="payoutStatus">${options(PAYOUT_STATUSES,x.payoutStatus||'Not Eligible')}</select></div>
+      <div class="field"><label>Paid Date</label><input name="payoutPaidDate" type="date" value="${esc(x.payoutPaidDate||'')}"></div>
+      <div class="field span2"><label>Payment Reference</label><input name="payoutReference" value="${esc(x.payoutReference||'')}" placeholder="Check, ACH, Zelle or batch reference"></div>
+      <div class="field full"><label>Internal Notes</label><textarea name="internalNotes" placeholder="Call attempts, quote information, internal follow-up notes…">${esc(x.internalNotes||'')}</textarea></div>
+      <div class="field full"><div class="lead-detail-actions"><button class="btn btn-primary" type="submit">Save Lead</button>${x._partner?`<button class="btn btn-secondary" type="button" data-copy-partner-update="${esc(x.id)}">Copy Partner Update</button>`:''}<span class="detail-note">Created ${dateOnly(x.createdAt)}${x.updatedAt?` · Updated ${dateOnly(x.updatedAt)}`:''}</span></div></div>
+    </div></form>`;
+  }
 
-    if(!filtered.length){body.innerHTML='<tr><td colspan="8" class="empty-state">No leads match this view yet.</td></tr>';}else{
-      body.innerHTML=filtered.map(x=>{
-        const source=x._partner?partnerSource(x):(x.source||'Direct');
-        const payout=x._partner&&Number(x.payoutAmount||0)>0?`${money(x.payoutAmount)} · ${x.payoutStatus||'Not Set'}`:'—';
-        return `<tr class="lead-main-row"><td><strong>${esc((x.firstName||'')+' '+(x.lastName||''))}</strong><br><span class="muted-inline">${esc(x.id||'')}</span></td><td><div class="contact-stack"><span>${esc(x.phone||'—')}</span><span class="muted-inline">${esc(x.email||'')}</span></div></td><td><strong>${esc(serviceText(x))}</strong><br><span class="muted-inline">${esc(addressText(x))}</span></td><td>${x._partner?`<span class="lead-source">${esc(source)}</span>`:'Direct'}</td><td>${esc(employeeName(x.assignedEmployee))}</td><td><span class="badge ${statusClass(x.status)}">${esc(x.status||'New')}</span></td><td>${esc(payout)}</td><td><button class="btn btn-secondary manage-btn" type="button" data-admin-toggle="${esc(x.id)}">Manage</button></td></tr>
-        <tr class="admin-detail-row"><td colspan="8"><div class="lead-detail" id="admin-detail-${esc(x.id)}"><form class="admin-lead-form" data-lead-id="${esc(x.id)}">
-          <div class="lead-detail-grid">
-            <div class="field"><label>Assigned Employee</label><select name="assignedEmployee">${employeeOptions(x.assignedEmployee)}</select></div>
-            <div class="field"><label>Lead Status</label><select name="status">${options(LEAD_STATUSES,x.status)}</select></div>
-            <div class="field"><label>Provider</label><select name="provider">${options(PROVIDERS,x.provider||'')}</select></div>
-            <div class="field"><label>Order / Confirmation #</label><input name="orderNumber" value="${esc(x.orderNumber||'')}"></div>
-            <div class="field"><label>Install Date</label><input name="installDate" type="date" value="${esc(x.installDate||'')}"></div>
-            ${x._partner?`<div class="field"><label>Partner Payout Amount</label><input name="payoutAmount" type="number" min="0" step="0.01" value="${esc(x.payoutAmount||0)}"></div><div class="field"><label>Payout Status</label><select name="payoutStatus">${options(PAYOUT_STATUSES,x.payoutStatus||'Not Set')}</select></div><div class="field"><label>Paid Date</label><input name="payoutPaidDate" type="date" value="${esc(x.payoutPaidDate||'')}"></div><div class="field"><label>Payment Reference</label><input name="payoutReference" value="${esc(x.payoutReference||'')}" placeholder="ACH/check/reference #"></div>`:''}
-            <div class="field full"><label>Internal Notes</label><textarea name="internalNotes" placeholder="Call attempts, customer preferences, order notes...">${esc(x.internalNotes||'')}</textarea></div>
-            <div class="field full"><div class="lead-detail-actions"><button class="btn btn-primary" type="submit">Save Lead</button>${x._partner?`<button class="btn btn-secondary" type="button" data-copy-partner-update="${esc(x.id)}">Copy Partner Update</button>`:''}<span class="detail-note">Last updated: ${dateOnly(x.updatedAt||x.createdAt)}</span></div></div>
-          </div>
-        </form></div></td></tr>`;
-      }).join('');
-    }
-    renderLedger(leads.filter(x=>x._partner));renderEmployees();
+  function renderAdmin(){
+    if(!$('#adminLeadTableBody')&&!$('#adminLeadCards'))return;
+    renderLegend('adminStatusLegend');
+    const filterSel=$('#adminLeadFilter');if(filterSel&&!filterSel.dataset.ready){filterSel.innerHTML='<option value="all">All statuses</option>'+options(LEAD_STATUSES,'');filterSel.dataset.ready='1'}
+    const leads=allLeads(),dupes=duplicateSet(leads);const search=String($('#adminLeadSearch')?.value||'').toLowerCase(),filter=$('#adminLeadFilter')?.value||'all';let shown=leads.filter(x=>filter==='all'||normalizeStatus(x.status)===filter);if(search)shown=shown.filter(x=>[x.id,x.firstName,x.lastName,x.phone,x.email,x.address,x.city,x.zip,serviceText(x),partnerSource(x),employeeName(x.assignedEmployee)].join(' ').toLowerCase().includes(search));
+    const unpaid=leads.filter(x=>['Pending','Approved'].includes(x.payoutStatus)).reduce((s,x)=>s+Number(x.payoutAmount||0),0);
+    $('#statLeads').textContent=leads.length;$('#statOpen').textContent=leads.filter(isOpen).length;$('#statSignedUp').textContent=leads.filter(isWon).length;$('#statInstalled').textContent=leads.filter(x=>normalizeStatus(x.status)==='Complete').length;$('#statUnpaidPayouts').textContent=money(unpaid);
+    const empty='<tr><td colspan="8" class="empty-state">No leads match this view.</td></tr>';
+    $('#adminLeadTableBody').innerHTML=shown.length?shown.map(x=>`<tr><td><strong>${esc((x.firstName||'')+' '+(x.lastName||''))}</strong><br><span class="muted-inline">${esc(x.id)}</span>${dupes.has(x.id)?'<br><span class="warning-chip">Possible duplicate</span>':''}</td><td><div class="contact-stack"><span>${esc(x.phone||'—')}</span><span class="muted-inline">${esc(x.email||'')}</span></div></td><td>${esc(serviceText(x))}<br><span class="muted-inline">${esc(addressText(x))}</span></td><td><span class="lead-source">${esc(partnerSource(x))}</span></td><td>${esc(employeeName(x.assignedEmployee))}</td><td>${statusBadge(x.status)}${x.nextFollowUp?`<br><span class="followup-date">Follow-up ${dateOnly(x.nextFollowUp)}</span>`:''}</td><td>${x._partner?payoutBadge(x.payoutStatus||'Not Eligible'):'—'}</td><td><button class="btn btn-secondary manage-btn" type="button" data-admin-toggle="${esc(x.id)}">Manage</button></td></tr><tr class="admin-detail-row"><td colspan="8"><div class="lead-detail" id="admin-detail-${esc(x.id)}">${leadDetailForm(x)}</div></td></tr>`).join(''):empty;
+    $('#adminLeadCards').innerHTML=shown.length?shown.map(x=>`<article class="mobile-data-card lead-card"><div class="mobile-card-head"><div><strong>${esc((x.firstName||'')+' '+(x.lastName||''))}</strong><span>${esc(x.id)} · ${esc(partnerSource(x))}</span></div>${statusBadge(x.status)}</div><dl><div><dt>Phone</dt><dd>${esc(x.phone||'—')}</dd></div><div><dt>Service</dt><dd>${esc(serviceText(x))}</dd></div><div><dt>Assigned</dt><dd>${esc(employeeName(x.assignedEmployee))}</dd></div><div><dt>Follow-Up</dt><dd>${dateOnly(x.nextFollowUp)}</dd></div>${x._partner?`<div><dt>Payout</dt><dd>${payoutBadge(x.payoutStatus||'Not Eligible')}</dd></div>`:''}</dl>${dupes.has(x.id)?'<span class="warning-chip">Possible duplicate</span>':''}<button class="btn btn-secondary mobile-manage" type="button" data-mobile-admin-toggle="${esc(x.id)}">Manage Lead</button><div class="mobile-detail" id="mobile-admin-detail-${esc(x.id)}">${leadDetailForm(x)}</div></article>`).join(''):'<div class="empty-card">No leads match this view.</div>';
+    renderLedger(leads.filter(x=>x._partner));renderEmployees();renderPartners();
   }
 
   function renderLedger(refs){
-    const body=$('#payoutLedgerBody');if(!body)return;
-    const rows=refs.filter(x=>Number(x.payoutAmount||0)>0||x.payoutStatus&&x.payoutStatus!=='Not Set');
-    const pending=rows.filter(x=>['Pending','Approved'].includes(x.payoutStatus)).reduce((s,x)=>s+Number(x.payoutAmount||0),0);
-    const paid=rows.filter(x=>x.payoutStatus==='Paid').reduce((s,x)=>s+Number(x.payoutAmount||0),0);
-    if($('#ledgerPendingTotal'))$('#ledgerPendingTotal').textContent=money(pending);
-    if($('#ledgerPaidTotal'))$('#ledgerPaidTotal').textContent=money(paid);
-    body.innerHTML=rows.length?rows.map(x=>`<tr${x.payoutStatus==='Paid'?' class="paid-row"':''}><td><strong>${esc((x.firstName||'')+' '+(x.lastName||''))}</strong><br><span class="muted-inline">${esc(x.id)}</span></td><td><span class="lead-source">${esc(partnerSource(x))}</span></td><td><span class="badge ${statusClass(x.status)}">${esc(x.status||'—')}</span></td><td class="money">${money(x.payoutAmount)}</td><td><span class="badge ${payoutClass(x.payoutStatus)}">${esc(x.payoutStatus||'Not Set')}</span></td><td>${dateOnly(x.payoutPaidDate)}</td><td>${esc(x.payoutReference||'—')}</td></tr>`).join(''):'<tr><td colspan="7" class="empty-state">No payout ledger entries yet. Open a partner lead and enter a payout amount/status.</td></tr>';
+    const rows=refs.filter(x=>Number(x.payoutAmount||0)>0||x.payoutStatus&&x.payoutStatus!=='Not Eligible');const pending=rows.filter(x=>x.payoutStatus==='Pending').reduce((s,x)=>s+Number(x.payoutAmount||0),0),approved=rows.filter(x=>x.payoutStatus==='Approved').reduce((s,x)=>s+Number(x.payoutAmount||0),0),paid=rows.filter(x=>x.payoutStatus==='Paid').reduce((s,x)=>s+Number(x.payoutAmount||0),0);$('#ledgerPendingTotal').textContent=money(pending);$('#ledgerApprovedTotal').textContent=money(approved);$('#ledgerPaidTotal').textContent=money(paid);
+    $('#payoutLedgerBody').innerHTML=rows.length?rows.map(x=>`<tr><td><strong>${esc((x.firstName||'')+' '+(x.lastName||''))}</strong><br><span class="muted-inline">${esc(x.id)}</span></td><td>${esc(partnerName(partnerSource(x)))}</td><td>${statusBadge(x.status)}</td><td class="money">${money(x.payoutAmount)}</td><td>${payoutBadge(x.payoutStatus)}</td><td>${dateOnly(x.payoutPaidDate)}</td><td>${esc(x.payoutReference||'—')}</td></tr>`).join(''):'<tr><td colspan="7" class="empty-state">No partner payout entries yet.</td></tr>';
+    $('#payoutLedgerCards').innerHTML=rows.length?rows.map(x=>`<article class="mobile-data-card"><div class="mobile-card-head"><div><strong>${esc((x.firstName||'')+' '+(x.lastName||''))}</strong><span>${esc(partnerName(partnerSource(x)))}</span></div>${payoutBadge(x.payoutStatus)}</div><dl><div><dt>Outcome</dt><dd>${statusBadge(x.status)}</dd></div><div><dt>Amount</dt><dd class="money">${money(x.payoutAmount)}</dd></div><div><dt>Paid</dt><dd>${dateOnly(x.payoutPaidDate)}</dd></div><div><dt>Reference</dt><dd>${esc(x.payoutReference||'—')}</dd></div></dl></article>`).join(''):'<div class="empty-card">No partner payout entries yet.</div>';
   }
 
-  function renderEmployees(){
-    const body=$('#employeeTableBody');if(!body)return;
-    const employees=getEmployees();const leads=allLeads();
-    body.innerHTML=employees.length?employees.map(e=>`<tr><td><strong>${esc(e.name)}</strong><br><span class="muted-inline">${esc(e.id)}</span></td><td>${esc(e.role||'Sales Representative')}</td><td>${esc(e.email||'—')}<br><span class="muted-inline">${esc(e.phone||'')}</span></td><td>${leads.filter(x=>x.assignedEmployee===e.id).length}</td><td><span class="badge ${e.status==='Inactive'?'not-signed':'installed'}">${esc(e.status||'Active')}</span></td><td><a class="btn btn-secondary manage-btn" href="employee-dashboard.html?employee=${encodeURIComponent(e.id)}">Open Portal</a> <button class="btn btn-secondary manage-btn" type="button" data-toggle-employee="${esc(e.id)}">${e.status==='Inactive'?'Activate':'Deactivate'}</button></td></tr>`).join(''):'<tr><td colspan="6" class="empty-state">No employees created yet. Use the form above to create your first employee portal.</td></tr>';
-  }
+  function renderEmployees(){const body=$('#employeeTableBody');if(!body)return;const emps=getEmployees(),leads=allLeads();body.innerHTML=emps.length?emps.map(e=>`<tr><td><strong>${esc(e.name)}</strong><br><span class="muted-inline">${esc(e.email||'')}</span></td><td>${esc(e.role||'Sales Rep')}</td><td>${leads.filter(x=>x.assignedEmployee===e.id).length}</td><td>${accountBadge(e.status||'Active')}</td><td><a class="mini-action" href="employee-dashboard.html?employee=${encodeURIComponent(e.id)}">View</a> <button class="mini-action" type="button" data-toggle-employee="${esc(e.id)}">${e.status==='Inactive'?'Activate':'Deactivate'}</button></td></tr>`).join(''):'<tr><td colspan="5" class="empty-state">No sales reps created yet.</td></tr>'}
+  function renderPartners(){const body=$('#partnerTableBody');if(!body)return;const ps=getPartners(),refs=arr(STORE_REF);body.innerHTML=ps.length?ps.map(p=>`<tr><td><strong>${esc(p.name)}</strong><br><span class="muted-inline">${esc(p.partnerType||'Referral Partner')}</span></td><td><span class="lead-source">${esc(p.code)}</span></td><td>${refs.filter(r=>(r.source||r.partnerCode)===p.code).length}</td><td>${accountBadge(p.status||'Active')}</td><td><a class="mini-action" href="partner-dashboard.html?partner=${encodeURIComponent(p.code)}">View</a> <button class="mini-action" type="button" data-copy-partner-link="${esc(p.code)}">Link</button></td></tr>`).join(''):'<tr><td colspan="5" class="empty-state">No referral partners created yet.</td></tr>'}
 
-  const employeeCreate=$('#employeeCreateForm');
-  if(employeeCreate)employeeCreate.addEventListener('submit',e=>{
-    e.preventDefault();if(!employeeCreate.reportValidity())return;const data=formData(employeeCreate);data.id=id('EMP');data.createdAt=new Date().toISOString();data.status='Active';save(STORE_EMP,data);setStatus(employeeCreate,`${data.name} was created. Their portal ID is ${data.id}.`);employeeCreate.reset();renderAdmin();
-  });
+  $('#employeeCreateForm')?.addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;if(!f.reportValidity())return;const d=formData(f);d.id=id('EMP');d.createdAt=new Date().toISOString();d.status=d.status||'Active';save(STORE_EMP,d);setStatus(f,`${d.name} added as ${d.role}.`);f.reset();renderAdmin()});
+  $('#partnerCreateForm')?.addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;if(!f.reportValidity())return;const d=formData(f);d.id=id('PART');d.code=codeFromName(d.name);d.createdAt=new Date().toISOString();d.status=d.status||'Active';save(STORE_PARTNERS,d);setStatus(f,`${d.name} added. Referral code: ${d.code}`);f.reset();renderAdmin()});
   $('#adminLeadSearch')?.addEventListener('input',renderAdmin);$('#adminLeadFilter')?.addEventListener('change',renderAdmin);$('#refreshAdmin')?.addEventListener('click',()=>{renderAdmin();toast('Dashboard refreshed')});
 
   document.addEventListener('click',async e=>{
-    const toggle=e.target.closest('[data-admin-toggle]');if(toggle){const d=document.getElementById('admin-detail-'+toggle.dataset.adminToggle);if(d)d.classList.toggle('open');return}
-    const empToggle=e.target.closest('[data-toggle-employee]');if(empToggle){const data=getEmployees();const i=data.findIndex(x=>x.id===empToggle.dataset.toggleEmployee);if(i>=0){data[i].status=data[i].status==='Inactive'?'Active':'Inactive';put(STORE_EMP,data);renderAdmin();toast('Employee status updated')}return}
-    const copy=e.target.closest('[data-copy-partner-update]');if(copy){const lead=allLeads().find(x=>x.id===copy.dataset.copyPartnerUpdate);if(!lead)return;const payout=Number(lead.payoutAmount||0)>0?` Payout: ${lead.payoutStatus||'Not Set'} ${money(lead.payoutAmount)}.`:'';const msg=`GetNetDirect referral update — ${lead.firstName||''} ${lead.lastName||''}: ${lead.status||'In Progress'}.${payout} Thank you for your referral.`;try{await navigator.clipboard.writeText(msg);toast('Partner update copied')}catch(err){toast('Could not copy message')}return}
+    const desktop=e.target.closest('[data-admin-toggle]');if(desktop){$('#admin-detail-'+desktop.dataset.adminToggle)?.classList.toggle('open');return}
+    const mobile=e.target.closest('[data-mobile-admin-toggle]');if(mobile){$('#mobile-admin-detail-'+mobile.dataset.mobileAdminToggle)?.classList.toggle('open');return}
+    const emp=e.target.closest('[data-toggle-employee]');if(emp){const a=getEmployees(),i=a.findIndex(x=>x.id===emp.dataset.toggleEmployee);if(i>=0){a[i].status=a[i].status==='Inactive'?'Active':'Inactive';put(STORE_EMP,a);renderAdmin();toast('Sales rep status updated')}return}
+    const cp=e.target.closest('[data-copy-partner-link]');if(cp){const txt=`https://getnetdirect.com/?ref=${cp.dataset.copyPartnerLink}`;try{await navigator.clipboard.writeText(txt);toast('Partner referral link copied')}catch(err){toast(txt)}return}
+    const update=e.target.closest('[data-copy-partner-update]');if(update){const lead=allLeads().find(x=>x.id===update.dataset.copyPartnerUpdate);if(!lead)return;const payout=Number(lead.payoutAmount||0)>0?` Payout: ${lead.payoutStatus||'Not Eligible'} ${money(lead.payoutAmount)}.`:'';const msg=`GetNetDirect referral update — ${lead.firstName||''} ${lead.lastName||''}: ${normalizeStatus(lead.status)}.${payout} Thank you for your referral.`;try{await navigator.clipboard.writeText(msg);toast('Partner update copied')}catch(err){toast('Could not copy update')}return}
   });
-
-  document.addEventListener('submit',e=>{
-    const form=e.target.closest('.admin-lead-form');if(!form)return;e.preventDefault();const data=formData(form);if(data.payoutStatus==='Paid'&&!data.payoutPaidDate)data.payoutPaidDate=new Date().toISOString().slice(0,10);updateLead(form.dataset.leadId,data);renderAdmin();toast('Lead updated');
-  });
-
-  renderAdmin();
+  document.addEventListener('submit',e=>{const f=e.target.closest('.admin-lead-form');if(!f)return;e.preventDefault();const d=formData(f);if(d.payoutStatus==='Paid'&&!d.payoutPaidDate)d.payoutPaidDate=new Date().toISOString().slice(0,10);updateLead(f.dataset.leadId,d);renderAdmin();toast('Lead updated')});
 
   /* Employee portal */
-  function employeeFromPage(){
-    const requested=params.get('employee')||localStorage.getItem('gnd_employee_view')||'';
-    const employees=getEmployees();return employees.find(x=>x.id===requested)||employees.find(x=>x.status!=='Inactive')||null;
-  }
-  function renderEmployeeSelector(){
-    const sel=$('#employeeSelector');if(!sel)return;const employees=getEmployees().filter(x=>x.status!=='Inactive');
-    sel.innerHTML=employees.length?employees.map(e=>`<option value="${esc(e.id)}">${esc(e.name)} — ${esc(e.role||'Sales Representative')}</option>`).join(''):'<option value="">No employees created yet</option>';
-    const current=employeeFromPage();if(current)sel.value=current.id;
-  }
-  $('#openEmployeeView')?.addEventListener('click',()=>{const idv=$('#employeeSelector')?.value;if(!idv){toast('Create an employee in the admin portal first');return}localStorage.setItem('gnd_employee_view',idv);location.href=`employee-dashboard.html?employee=${encodeURIComponent(idv)}`;});
-
+  function employeeFromPage(){const session=window.GNDAuth?.getSession?.();const req=params.get('employee')||session?.employeeId||localStorage.getItem('gnd_employee_view')||'';const emps=getEmployees();return emps.find(x=>x.id===req)||emps.find(x=>x.status!=='Inactive')||null}
+  function renderEmployeeSelector(){const sel=$('#employeeSelector');if(!sel)return;const emps=getEmployees().filter(x=>x.status!=='Inactive');sel.innerHTML=emps.length?emps.map(e=>`<option value="${esc(e.id)}">${esc(e.name)} — ${esc(e.role||'Sales Rep')}</option>`).join(''):'<option value="">No sales reps created</option>';const c=employeeFromPage();if(c)sel.value=c.id;const s=window.GNDAuth?.getSession?.();if(s?.role!=='admin')$('#employeeSwitcherWrap')?.classList.add('hidden')}
+  $('#openEmployeeView')?.addEventListener('click',()=>{const v=$('#employeeSelector')?.value;if(!v){toast('Create a sales rep first');return}localStorage.setItem('gnd_employee_view',v);location.href=`employee-dashboard.html?employee=${encodeURIComponent(v)}`});
+  function employeeLeadDetail(x){return `<form class="employee-lead-form" data-lead-id="${esc(x.id)}"><div class="lead-detail-grid"><div class="field"><label>Status</label><select name="status">${options(LEAD_STATUSES,normalizeStatus(x.status))}</select></div><div class="field"><label>Next Follow-Up</label><input name="nextFollowUp" type="date" value="${esc(x.nextFollowUp||'')}"></div><div class="field"><label>Provider</label><select name="provider">${options(PROVIDERS,x.provider||'','Select provider')}</select></div><div class="field"><label>Order / Confirmation #</label><input name="orderNumber" value="${esc(x.orderNumber||'')}"></div><div class="field"><label>Install Date</label><input name="installDate" type="date" value="${esc(x.installDate||'')}"></div><div class="field full"><label>Sales Notes</label><textarea name="internalNotes">${esc(x.internalNotes||'')}</textarea></div><div class="field full"><button class="btn btn-primary" type="submit">Save Update</button></div></div></form>`}
   function renderEmployee(){
-    const body=$('#employeeLeadTableBody');if(!body)return;renderEmployeeSelector();const emp=employeeFromPage();
-    if(!emp){$('#employeeWelcome').textContent='Employee Dashboard';$('#employeeSubtitle').textContent='No employee profiles exist yet. Create one from the admin portal.';body.innerHTML='<tr><td colspan="7" class="empty-state">No employee profile is available yet.</td></tr>';return}
-    localStorage.setItem('gnd_employee_view',emp.id);$('#employeeWelcome').textContent=`Welcome, ${emp.name}`;$('#employeeSubtitle').textContent=`${emp.role||'Sales Representative'} · ${emp.email||emp.id}`;
-    const search=String($('#employeeLeadSearch')?.value||'').toLowerCase();let leads=allLeads().filter(x=>x.assignedEmployee===emp.id);if(search)leads=leads.filter(x=>[x.firstName,x.lastName,x.phone,x.address,x.city,serviceText(x)].join(' ').toLowerCase().includes(search));
-    const assigned=allLeads().filter(x=>x.assignedEmployee===emp.id);const contacted=assigned.filter(x=>['Contacted','Qualified','Signed Up','Install Scheduled','Installed'].includes(x.status)).length;const signed=assigned.filter(isWon).length;const installed=assigned.filter(x=>x.status==='Installed').length;const open=assigned.filter(isOpen).length;
-    $('#empStatAssigned').textContent=assigned.length;$('#empStatContacted').textContent=contacted;$('#empStatSigned').textContent=signed;$('#empStatInstalled').textContent=installed;$('#empConversionRate').textContent=assigned.length?Math.round((signed/assigned.length)*100)+'%':'0%';$('#empInstallRate').textContent=signed?Math.round((installed/signed)*100)+'%':'0%';$('#empOpenLeads').textContent=open;
-    body.innerHTML=leads.length?leads.map(x=>`<tr><td><strong>${esc((x.firstName||'')+' '+(x.lastName||''))}</strong><br><span class="muted-inline">${esc(x.id)}</span></td><td><div class="contact-stack"><span>${esc(x.phone||'—')}</span><span class="muted-inline">${esc(x.email||'')}</span><div class="contact-actions">${x.phone?`<a class="mini-action" href="tel:${esc(phoneHref(x.phone))}">Call</a><a class="mini-action" href="sms:${esc(phoneHref(x.phone))}">Text</a>`:''}${x.email?`<a class="mini-action" href="mailto:${esc(x.email)}">Email</a>`:''}</div></div></td><td>${esc(addressText(x))}</td><td>${esc(serviceText(x))}</td><td>${x._partner?`<span class="lead-source">${esc(partnerSource(x))}</span>`:'Direct'}</td><td><span class="badge ${statusClass(x.status)}">${esc(x.status||'New')}</span></td><td><button class="btn btn-secondary manage-btn" type="button" data-employee-toggle="${esc(x.id)}">Work Lead</button></td></tr><tr class="employee-detail-row"><td colspan="7"><div class="lead-detail" id="employee-detail-${esc(x.id)}"><form class="employee-lead-form" data-lead-id="${esc(x.id)}"><div class="lead-detail-grid"><div class="field"><label>Status</label><select name="status">${options(LEAD_STATUSES,x.status)}</select></div><div class="field"><label>Provider</label><select name="provider">${options(PROVIDERS,x.provider||'')}</select></div><div class="field"><label>Order / Confirmation #</label><input name="orderNumber" value="${esc(x.orderNumber||'')}"></div><div class="field"><label>Install Date</label><input name="installDate" type="date" value="${esc(x.installDate||'')}"></div><div class="field full"><label>Employee Notes</label><textarea name="internalNotes" placeholder="Call attempts, quote details, follow-up notes...">${esc(x.internalNotes||'')}</textarea></div><div class="field full"><div class="lead-detail-actions"><button class="btn btn-primary" type="submit">Save Update</button><span class="detail-note">Partner payout information is managed by an administrator.</span></div></div></div></form></div></td></tr>`).join(''):'<tr><td colspan="7" class="empty-state">No leads are assigned to this employee yet.</td></tr>';
+    if(!$('#employeeLeadTableBody')&&!$('#employeeLeadCards'))return;renderLegend('employeeStatusLegend',true);renderEmployeeSelector();const emp=employeeFromPage();if(!emp){$('#employeeWelcome').textContent='Sales Dashboard';$('#employeeSubtitle').textContent='No sales rep profile exists yet.';$('#employeeLeadTableBody').innerHTML='<tr><td colspan="7" class="empty-state">No employee profile available.</td></tr>';$('#employeeLeadCards').innerHTML='<div class="empty-card">No employee profile available.</div>';return}localStorage.setItem('gnd_employee_view',emp.id);$('#employeeWelcome').textContent=`Welcome, ${emp.name}`;$('#employeeSubtitle').textContent=`${emp.role||'Sales Representative'} · ${emp.email||emp.id}`;
+    const fs=$('#employeeLeadFilter');if(fs&&!fs.dataset.ready){fs.innerHTML='<option value="all">All statuses</option>'+options(LEAD_STATUSES,'');fs.dataset.ready='1'}const search=String($('#employeeLeadSearch')?.value||'').toLowerCase(),filter=fs?.value||'all';const assigned=allLeads().filter(x=>x.assignedEmployee===emp.id);let leads=assigned.filter(x=>filter==='all'||normalizeStatus(x.status)===filter);if(search)leads=leads.filter(x=>[x.firstName,x.lastName,x.phone,x.address,x.city,serviceText(x)].join(' ').toLowerCase().includes(search));const progressed=assigned.filter(x=>PROGRESS_STATUSES.has(normalizeStatus(x.status))).length,signed=assigned.filter(isWon).length,complete=assigned.filter(x=>normalizeStatus(x.status)==='Complete').length,open=assigned.filter(isOpen).length;$('#empStatAssigned').textContent=assigned.length;$('#empOpenLeads').textContent=open;$('#empStatSigned').textContent=signed;$('#empStatInstalled').textContent=complete;$('#empStatContacted').textContent=progressed;$('#empConversionRate').textContent=assigned.length?Math.round((signed/assigned.length)*100)+'%':'0%';$('#empInstallRate').textContent=signed?Math.round((complete/signed)*100)+'%':'0%';
+    $('#employeeLeadTableBody').innerHTML=leads.length?leads.map(x=>`<tr><td><strong>${esc((x.firstName||'')+' '+(x.lastName||''))}</strong><br><span class="muted-inline">${esc(x.id)}</span></td><td><div class="contact-stack"><span>${esc(x.phone||'—')}</span><span class="muted-inline">${esc(x.email||'')}</span><div class="contact-actions">${x.phone?`<a class="mini-action" href="tel:${esc(phoneHref(x.phone))}">Call</a><a class="mini-action" href="sms:${esc(phoneHref(x.phone))}">Text</a>`:''}${x.email?`<a class="mini-action" href="mailto:${esc(x.email)}">Email</a>`:''}</div></div></td><td>${esc(addressText(x))}</td><td>${esc(serviceText(x))}</td><td>${esc(partnerSource(x))}</td><td>${statusBadge(x.status)}${x.nextFollowUp?`<br><span class="followup-date">${dateOnly(x.nextFollowUp)}</span>`:''}</td><td><button class="btn btn-secondary manage-btn" type="button" data-employee-toggle="${esc(x.id)}">Work Lead</button></td></tr><tr class="employee-detail-row"><td colspan="7"><div class="lead-detail" id="employee-detail-${esc(x.id)}">${employeeLeadDetail(x)}</div></td></tr>`).join(''):'<tr><td colspan="7" class="empty-state">No leads match this view.</td></tr>';
+    $('#employeeLeadCards').innerHTML=leads.length?leads.map(x=>`<article class="mobile-data-card"><div class="mobile-card-head"><div><strong>${esc((x.firstName||'')+' '+(x.lastName||''))}</strong><span>${esc(x.id)} · ${esc(partnerSource(x))}</span></div>${statusBadge(x.status)}</div><div class="mobile-contact-actions">${x.phone?`<a href="tel:${esc(phoneHref(x.phone))}">Call</a><a href="sms:${esc(phoneHref(x.phone))}">Text</a>`:''}${x.email?`<a href="mailto:${esc(x.email)}">Email</a>`:''}</div><dl><div><dt>Service</dt><dd>${esc(serviceText(x))}</dd></div><div><dt>Address</dt><dd>${esc(addressText(x))}</dd></div><div><dt>Follow-Up</dt><dd>${dateOnly(x.nextFollowUp)}</dd></div></dl><button class="btn btn-secondary mobile-manage" type="button" data-mobile-employee-toggle="${esc(x.id)}">Work Lead</button><div class="mobile-detail" id="mobile-employee-detail-${esc(x.id)}">${employeeLeadDetail(x)}</div></article>`).join(''):'<div class="empty-card">No leads match this view.</div>';
   }
-  $('#employeeLeadSearch')?.addEventListener('input',renderEmployee);
-  document.addEventListener('click',e=>{const t=e.target.closest('[data-employee-toggle]');if(!t)return;const d=document.getElementById('employee-detail-'+t.dataset.employeeToggle);if(d)d.classList.toggle('open')});
-  document.addEventListener('submit',e=>{const form=e.target.closest('.employee-lead-form');if(!form)return;e.preventDefault();updateLead(form.dataset.leadId,formData(form));renderEmployee();toast('Lead update saved')});
-  renderEmployee();
+  $('#employeeLeadSearch')?.addEventListener('input',renderEmployee);$('#employeeLeadFilter')?.addEventListener('change',renderEmployee);
+  document.addEventListener('click',e=>{const d=e.target.closest('[data-employee-toggle]');if(d){$('#employee-detail-'+d.dataset.employeeToggle)?.classList.toggle('open');return}const m=e.target.closest('[data-mobile-employee-toggle]');if(m){$('#mobile-employee-detail-'+m.dataset.mobileEmployeeToggle)?.classList.toggle('open')}});
+  document.addEventListener('submit',e=>{const f=e.target.closest('.employee-lead-form');if(!f)return;e.preventDefault();updateLead(f.dataset.leadId,formData(f));renderEmployee();toast('Lead update saved')});
+
+  renderPartner();renderAdmin();renderEmployee();
 })();
