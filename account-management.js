@@ -22,7 +22,7 @@
   async function openManager(kind,id){
     message.style.display='none';password.value='';revoke.checked=false;
     try{await refreshAccounts();const role=kind==='employees'?'employee':'partner',a=accounts.find(x=>x.role===role&&linkedId(x)===id);if(!a)throw Error('Could not find that portal account.');
-      kindEl.value=kind;idEl.value=id;title.textContent='Manage '+(role==='employee'?'Employee / Contractor':'Referral Partner')+' Login';subtitle.textContent=a.name||'Portal account';currentUser.textContent=a.username||'—';lastLogin.textContent=fmt(a.lastLoginAt);codeEl.textContent=a.code||'—';username.value=a.username||'';trackingCode.value=a.code||'';status.value=['Active','Pending Approval','Paused','Inactive'].includes(a.status)?a.status:'Active';force.checked=!!a.forcePasswordChange;locked.checked=!!a.accountLocked;
+      kindEl.value=kind;idEl.value=id;title.textContent='Set / Reset '+(role==='employee'?'Employee / Contractor':'Referral Partner')+' Login';subtitle.textContent=a.name||'Portal account';currentUser.textContent=a.username||'—';lastLogin.textContent=fmt(a.lastLoginAt);codeEl.textContent=a.code||'—';username.value=a.username||'';trackingCode.value=a.code||'';status.value=['Active','Pending Approval','Paused','Inactive'].includes(a.status)?a.status:'Active';force.checked=!!a.forcePasswordChange;locked.checked=!!a.accountLocked;
       dialog.showModal();
     }catch(e){window.alert(e.message||'Could not load the account.');}
   }
@@ -32,10 +32,10 @@
     if(e.target.closest('[data-close-account-manager]')){close();return;}
     const toggle=e.target.closest('[data-password-toggle]');if(toggle){const input=document.getElementById(toggle.dataset.passwordToggle);if(!input)return;input.type=input.type==='password'?'text':'password';toggle.textContent=input.type==='password'?'Show':'Hide';return;}
   });
-  document.getElementById('generateTemporaryPassword').addEventListener('click',()=>{password.value=randomPassword();password.type='text';force.checked=true;revoke.checked=true;showMessage('Temporary password generated. Copy it before closing this window.','success');});
+  document.getElementById('generateTemporaryPassword').addEventListener('click',()=>{password.value=randomPassword();password.type='text';force.checked=true;revoke.checked=true;showMessage('New password generated. Save the account changes for it to take effect.','success');});
   document.getElementById('copyTemporaryLogin').addEventListener('click',async()=>{
-    if(!password.value){showMessage('Generate or enter a temporary password first.','error');return;}
-    const text=`GetNetDirect Portal Login\nUsername: ${username.value}\nTemporary Password: ${password.value}\nPortal: https://getnetdirect.com/portal.html`;
+    if(!password.value){showMessage('Type or generate a new password first.','error');return;}
+    const text=`GetNetDirect Portal Login\nUsername: ${username.value}\nNew Password: ${password.value}\nPortal: https://getnetdirect.com/portal.html`;
     try{await navigator.clipboard.writeText(text);showMessage('Temporary login copied.','success');}catch{showMessage('Copy failed. Select and copy the credentials manually.','error');}
   });
   form.addEventListener('submit',async e=>{
@@ -44,10 +44,10 @@
     try{
       await window.GNDAPI.setAccountStatus(kindEl.value,idEl.value,status.value);
       const r=await window.GNDAPI.manageAccount(kindEl.value,idEl.value,{username:username.value.trim(),trackingCode:trackingCode.value.trim(),temporaryPassword:password.value,forcePasswordChange:force.checked,accountLocked:locked.checked,revokeSessions:revoke.checked});
-      currentUser.textContent=r.account?.username||username.value;codeEl.textContent=r.account?.code||trackingCode.value;password.value='';showMessage('Account updated. Any revoked session will be blocked on its next server request.','success');
+      currentUser.textContent=r.account?.username||username.value;codeEl.textContent=r.account?.code||trackingCode.value;password.value='';showMessage('Login updated successfully. If you entered a new password, it is effective now. The old password is no longer needed.','success');
       document.dispatchEvent(new CustomEvent('gnd-account-updated'));
     }catch(err){showMessage(err.message||'Could not update the account.','error');}
-    finally{submit.disabled=false;submit.textContent='Save Account Changes';}
+    finally{submit.disabled=false;submit.textContent='Save / Reset Login';}
   });
   dialog.addEventListener('click',e=>{if(e.target===dialog)close();});
 })();
