@@ -50,10 +50,12 @@ async function init(){
   const adminUser=process.env.ADMIN_USERNAME||'admin';
   const adminPass=process.env.ADMIN_PASSWORD;
   if(adminPass){
-    const existing=await pool.query('SELECT 1 FROM users WHERE username=$1',[adminUser]);
+    const existing=await pool.query('SELECT id FROM users WHERE username=$1',[adminUser]);
+    const hash=await bcrypt.hash(adminPass,12);
     if(!existing.rowCount){
-      const hash=await bcrypt.hash(adminPass,12);
       await pool.query('INSERT INTO users(id,username,password_hash,role,display_name) VALUES($1,$2,$3,$4,$5)',[makeId('USR'),adminUser,hash,'admin','GetNetDirect Admin']);
+    }else{
+      await pool.query("UPDATE users SET password_hash=$1,status='Active' WHERE username=$2",[hash,adminUser]);
     }
   }
 }
@@ -68,9 +70,9 @@ function role(...roles){return (req,res,next)=>roles.includes(req.user.role)?nex
 app.get('/health',async(req,res)=>{try{await pool.query('SELECT 1');res.json({ok:true});}catch(e){res.status(500).json({ok:false,error:e.message});}});
 app.post('/auth/login',async(req,res)=>{
   const {username,password}=req.body||{};
-  const q=await pool.query('SELECT * FROM users WHERE lower(username)=lower($1) AND status=$2',[String(username||''),'Active']);
+  const q=await pool.query(`SELECT u.*,e.code employee_code,p.code partner_code FROM users u LEFT JOIN employees e ON e.id=u.employee_id LEFT JOIN partners p ON p.id=u.partner_id WHERE lower(u.username)=lower($1) AND u.status=$2`,[String(username||''),'Active']);
   const u=q.rows[0]; if(!u||!(await bcrypt.compare(String(password||''),u.password_hash))) return res.status(401).json({error:'Invalid username or password'});
-  res.json({token:tokenFor(u),user:{id:u.id,username:u.username,role:u.role,name:u.display_name,employeeId:u.employee_id,partnerId:u.partner_id}});
+  res.json({token:tokenFor(u),user:{id:u.id,username:u.username,role:u.role,name:u.display_name,employeeId:u.employee_id,partnerId:u.partner_id,employeeCode:u.employee_code||'',partnerCode:u.partner_code||''}});
 });
 app.get('/auth/me',auth,(req,res)=>res.json({user:req.user}));
 

@@ -1,0 +1,25 @@
+GETNETDIRECT SHARED DATABASE V9
+
+This build connects customer forms and portals to the Railway API:
+https://getnetdirect-api-production.up.railway.app
+
+UPLOAD TO GITHUB ROOT:
+- api-client.js
+- auth.js
+- script.js
+- index.html
+- admin.html
+- employee-dashboard.html
+- partner-dashboard.html
+- portal.html
+- partner.html
+- marketing-tools.html
+- api/server.js
+- api/package.json
+
+IMPORTANT:
+1. The API and PostgreSQL services must remain online in Railway.
+2. Admin/team/partner accounts must be created through the Admin Portal after this build is live.
+3. Codes created only in an older localStorage build are NOT database accounts. Re-create those reps/partners in the live Admin Portal.
+4. Use the Admin Portal username/password fields to create each employee/contractor or referral partner.
+5. Employee and partner QR codes generated after account creation will route leads into the shared database.
