@@ -14,6 +14,9 @@ export async function initV11(pool){
       ALTER TABLE leads ADD COLUMN IF NOT EXISTS review_requested_at timestamptz;
       ALTER TABLE leads ADD COLUMN IF NOT EXISTS version integer NOT NULL DEFAULT 1;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version integer NOT NULL DEFAULT 1;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS force_password_change boolean NOT NULL DEFAULT false;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS account_locked boolean NOT NULL DEFAULT false;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at timestamptz;
       CREATE TABLE IF NOT EXISTS gnd_system_meta(key text PRIMARY KEY,value text NOT NULL);
       INSERT INTO gnd_system_meta(key,value) VALUES('v11_tracking_started_at',now()::text) ON CONFLICT(key) DO NOTHING;
       CREATE TABLE IF NOT EXISTS lead_activity(

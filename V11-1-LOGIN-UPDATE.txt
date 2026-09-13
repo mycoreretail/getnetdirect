@@ -1,0 +1,13 @@
+GETNETDIRECT v11.1 — MY LOGIN UPDATE
+
+New Admin feature:
+- Open Admin Portal -> My Login.
+- Enter your current password.
+- Change your username, password, or both.
+- New password must be at least 8 characters.
+- Current password is required for every credential change.
+- Username changes are checked for duplicates.
+- Your current session is refreshed automatically after a successful change.
+
+IMPORTANT:
+Upload the full site package, including api/server.js and account-settings.js. Railway must redeploy the API so /auth/change-credentials is available.

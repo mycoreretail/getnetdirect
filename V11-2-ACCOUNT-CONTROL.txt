@@ -1,0 +1,23 @@
+GetNetDirect v11.2 — Admin Account Control
+
+New Admin features:
+- Manage Login button for each employee/contractor and referral partner
+- Change username
+- Reset password with a temporary password
+- Generate and copy a temporary login
+- Require password change on next login
+- Lock / unlock an account
+- Revoke active sessions
+- View last login time
+- Activate / pause / deactivate account
+- Change tracking/referral code (regenerate QR/flyers after changing it)
+
+Security / behavior notes:
+- Existing passwords are never displayed.
+- A password reset stores only a server-side bcrypt hash.
+- Revoking sessions increments the account token version so existing sessions are rejected on their next API call.
+- A user marked for password change is redirected to the portal password-change screen after login.
+- Changing a tracking/referral code invalidates attribution from old QR codes/flyers; regenerate marketing material immediately.
+
+Deployment:
+Upload all files from this site folder to the existing GitHub repository, replacing matching files. Keep CNAME and GitHub workflow files. The API service must redeploy with api/server.js and api/v11-support.js.

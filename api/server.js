@@ -78,20 +78,40 @@ async function auth(req,res,next){
   let claims;try{claims=jwt.verify(t,JWT_SECRET,{algorithms:['HS256']});}catch{return res.status(401).json({error:'Login required'});}
   const q=await pool.query(`SELECT u.*,e.status employee_status,p.status partner_status,e.code employee_code,p.code partner_code FROM users u LEFT JOIN employees e ON e.id=u.employee_id LEFT JOIN partners p ON p.id=u.partner_id WHERE u.id=$1`,[claims.sub]);
   const u=q.rows[0];
-  if(!u||u.status!=='Active'||!['admin','employee','partner'].includes(u.role)||(claims.ver||1)!==(u.token_version||1)||(u.role==='employee'&&(!u.employee_id||u.employee_status!=='Active'))||(u.role==='partner'&&(!u.partner_id||u.partner_status!=='Active')))return res.status(401).json({error:'Your account is not active or your session changed. Please sign in again.'});
-  req.user={sub:u.id,id:u.id,role:u.role,employeeId:u.employee_id,partnerId:u.partner_id,name:u.display_name,username:u.username,employeeCode:u.employee_code||'',partnerCode:u.partner_code||''};next();
+  if(!u||u.status!=='Active'||u.account_locked||!['admin','employee','partner'].includes(u.role)||(claims.ver||1)!==(u.token_version||1)||(u.role==='employee'&&(!u.employee_id||u.employee_status!=='Active'))||(u.role==='partner'&&(!u.partner_id||u.partner_status!=='Active')))return res.status(401).json({error:'Your account is not active or your session changed. Please sign in again.'});
+  req.user={sub:u.id,id:u.id,role:u.role,employeeId:u.employee_id,partnerId:u.partner_id,name:u.display_name,username:u.username,employeeCode:u.employee_code||'',partnerCode:u.partner_code||'',forcePasswordChange:!!u.force_password_change,lastLoginAt:u.last_login_at||null};next();
 }
 function role(...roles){return (req,res,next)=>roles.includes(req.user.role)?next():res.status(403).json({error:'Not allowed'});}
 
-app.get('/health',async(req,res)=>{try{await pool.query('SELECT 1');res.json({ok:true,version:11,serverTime:new Date().toISOString()});}catch(e){res.status(503).json({ok:false,error:'Database unavailable'});}});
+app.get('/health',async(req,res)=>{try{await pool.query('SELECT 1');res.json({ok:true,version:'11.2',serverTime:new Date().toISOString()});}catch(e){res.status(503).json({ok:false,error:'Database unavailable'});}});
 app.post('/auth/login',rateLimit({maximum:15,windowMs:15*60000}),async(req,res)=>{
   const {username,password}=req.body||{};
   if(typeof username!=='string'||typeof password!=='string'||username.length>120||password.length>200)return res.status(400).json({error:'Invalid credentials'});
   const q=await pool.query(`SELECT u.*,e.code employee_code,p.code partner_code,e.status employee_status,p.status partner_status FROM users u LEFT JOIN employees e ON e.id=u.employee_id LEFT JOIN partners p ON p.id=u.partner_id WHERE lower(u.username)=lower($1) AND u.status=$2`,[String(username||''),'Active']);
-  const u=q.rows[0]; if(!u||(u.role==='employee'&&u.employee_status!=='Active')||(u.role==='partner'&&u.partner_status!=='Active')||!(await bcrypt.compare(String(password||''),u.password_hash))) return res.status(401).json({error:'Invalid username or password'});
-  res.json({token:tokenFor(u),user:{id:u.id,username:u.username,role:u.role,name:u.display_name,employeeId:u.employee_id,partnerId:u.partner_id,employeeCode:u.employee_code||'',partnerCode:u.partner_code||''}});
+  const u=q.rows[0]; if(!u||u.account_locked||(u.role==='employee'&&u.employee_status!=='Active')||(u.role==='partner'&&u.partner_status!=='Active')||!(await bcrypt.compare(String(password||''),u.password_hash))) return res.status(401).json({error:'Invalid username or password'});
+  await pool.query('UPDATE users SET last_login_at=now() WHERE id=$1',[u.id]);
+  res.json({token:tokenFor(u),user:{id:u.id,username:u.username,role:u.role,name:u.display_name,employeeId:u.employee_id,partnerId:u.partner_id,employeeCode:u.employee_code||'',partnerCode:u.partner_code||'',forcePasswordChange:!!u.force_password_change,lastLoginAt:new Date().toISOString()}});
 });
 app.get('/auth/me',auth,(req,res)=>res.json({user:req.user}));
+app.post('/auth/change-credentials',auth,rateLimit({maximum:10,windowMs:15*60000}),async(req,res)=>{
+  const {currentPassword,newUsername,newPassword}=req.body||{};
+  if(typeof currentPassword!=='string'||!currentPassword)return res.status(400).json({error:'Current password is required'});
+  const q=await pool.query('SELECT * FROM users WHERE id=$1',[req.user.sub]);
+  const u=q.rows[0];
+  if(!u||!(await bcrypt.compare(currentPassword,u.password_hash)))return res.status(401).json({error:'Current password is incorrect'});
+  const username=String(newUsername||u.username).trim().toLowerCase();
+  if(!/^\S{3,80}$/.test(username))return res.status(400).json({error:'Username must be 3–80 characters with no spaces'});
+  const wantsPassword=typeof newPassword==='string'&&newPassword.length>0;
+  if(wantsPassword&&(newPassword.length<8||Buffer.byteLength(newPassword)>72))return res.status(400).json({error:'New password must be 8–72 bytes'});
+  if(username===u.username&&!wantsPassword)return res.status(400).json({error:'Enter a new username or a new password'});
+  const duplicate=await pool.query('SELECT 1 FROM users WHERE lower(username)=lower($1) AND id<>$2',[username,u.id]);
+  if(duplicate.rowCount)return res.status(409).json({error:'That username is already in use'});
+  const hash=wantsPassword?await bcrypt.hash(newPassword,12):u.password_hash;
+  const updated=(await pool.query('UPDATE users SET username=$1,password_hash=$2,force_password_change=false,token_version=token_version+1 WHERE id=$3 RETURNING *',[username,hash,u.id])).rows[0];
+  const enriched={...updated,employee_code:req.user.employeeCode||'',partner_code:req.user.partnerCode||''};
+  const token=tokenFor(enriched);
+  res.json({ok:true,token,user:{id:updated.id,username:updated.username,role:updated.role,name:updated.display_name,employeeId:updated.employee_id,partnerId:updated.partner_id,employeeCode:req.user.employeeCode||'',partnerCode:req.user.partnerCode||'',forcePasswordChange:false,lastLoginAt:updated.last_login_at||null}});
+});
 
 app.post('/api/public/leads',rateLimit({maximum:60,windowMs:3600000}),async(req,res)=>{
   const b=req.body||{}; if(!b.firstName||!b.phone) return res.status(400).json({error:'First name and phone are required'});
@@ -120,7 +140,7 @@ app.get('/api/leads',auth,async(req,res)=>{
   if(req.user.role==='partner'){where='WHERE l.partner_id=$1';args=[req.user.partnerId];}
   const q=await pool.query(`SELECT l.*,e.name employee_name,e.code employee_code,p.name partner_name,p.code partner_code FROM leads l LEFT JOIN employees e ON e.id=l.employee_id LEFT JOIN partners p ON p.id=l.partner_id ${where} ORDER BY l.created_at DESC`,args);
   const rows=q.rows.map(r=>req.user.role==='partner'?{id:r.id,first_name:r.first_name,last_name:r.last_name,phone:r.phone,email:r.email,address:r.address,city:r.city,state:r.state,zip:r.zip,services:r.services,status:r.status,move_in:r.move_in,payout_amount:r.payout_amount,payout_status:r.payout_status,payout_paid_date:r.payout_paid_date,payout_reference:r.payout_reference,created_at:r.created_at}:r);
-  res.json({leads:rows,version:11,serverTime:new Date().toISOString()});
+  res.json({leads:rows,version:'11.1',serverTime:new Date().toISOString()});
 });
 
 const FINAL_STATUSES=new Set(['Complete','Not Serviceable','Cancelled','Void']);
@@ -192,6 +212,47 @@ app.post('/api/admin/partners',auth,role('admin'),async(req,res)=>{
 });
 
 
+app.get('/api/admin/accounts',auth,role('admin'),async(req,res)=>{
+  const q=await pool.query(`SELECT u.id,u.username,u.role,u.display_name,u.employee_id,u.partner_id,u.status,u.force_password_change,u.account_locked,u.last_login_at,u.created_at,
+    e.name employee_name,e.code employee_code,p.name partner_name,p.code partner_code
+    FROM users u LEFT JOIN employees e ON e.id=u.employee_id LEFT JOIN partners p ON p.id=u.partner_id
+    WHERE u.role IN ('employee','partner') ORDER BY lower(u.display_name),u.created_at`);
+  res.json({accounts:q.rows.map(x=>({id:x.id,username:x.username,role:x.role,name:x.display_name,employeeId:x.employee_id,partnerId:x.partner_id,status:x.status,forcePasswordChange:!!x.force_password_change,accountLocked:!!x.account_locked,lastLoginAt:x.last_login_at,createdAt:x.created_at,code:x.employee_code||x.partner_code||''}))});
+});
+
+app.patch('/api/admin/accounts/:kind/:id/credentials',auth,role('admin'),rateLimit({maximum:40,windowMs:15*60000}),async(req,res)=>{
+  const kind=req.params.kind,linkedColumn=kind==='employees'?'employee_id':kind==='partners'?'partner_id':null,linkedTable=kind==='employees'?'employees':kind==='partners'?'partners':null;
+  if(!linkedColumn||!linkedTable)return res.status(400).json({error:'Invalid account type'});
+  const b=req.body||{},c=await pool.connect();
+  try{
+    await c.query('BEGIN');
+    const u=(await c.query(`SELECT * FROM users WHERE ${linkedColumn}=$1 AND role=$2 FOR UPDATE`,[req.params.id,kind==='employees'?'employee':'partner'])).rows[0];
+    if(!u){await c.query('ROLLBACK');return res.status(404).json({error:'Account not found'});}
+    const username=String(b.username??u.username).trim().toLowerCase();
+    if(!/^\S{3,80}$/.test(username)){await c.query('ROLLBACK');return res.status(400).json({error:'Username must be 3–80 characters with no spaces'});}
+    const password=typeof b.temporaryPassword==='string'?b.temporaryPassword:'';
+    if(password&&(password.length<8||Buffer.byteLength(password)>72)){await c.query('ROLLBACK');return res.status(400).json({error:'Temporary password must be 8–72 bytes'});}
+    const duplicate=await c.query('SELECT 1 FROM users WHERE lower(username)=lower($1) AND id<>$2',[username,u.id]);
+    if(duplicate.rowCount){await c.query('ROLLBACK');return res.status(409).json({error:'That username is already in use'});}
+    const currentProfile=(await c.query(`SELECT code FROM ${linkedTable} WHERE id=$1 FOR UPDATE`,[req.params.id])).rows[0];
+    if(!currentProfile){await c.query('ROLLBACK');return res.status(404).json({error:'Profile not found'});}
+    const trackingCode=b.trackingCode===undefined?currentProfile.code:cleanCode(b.trackingCode);
+    if(!trackingCode||trackingCode.length<3||trackingCode.length>48){await c.query('ROLLBACK');return res.status(400).json({error:'Tracking code must be 3–48 letters, numbers or hyphens'});}
+    if(trackingCode!==currentProfile.code){
+      const codeDuplicate=await c.query('SELECT id FROM employees WHERE code=$1 AND id<>$2 UNION ALL SELECT id FROM partners WHERE code=$1 AND id<>$2',[trackingCode,req.params.id]);
+      if(codeDuplicate.rowCount){await c.query('ROLLBACK');return res.status(409).json({error:'That tracking code is already in use'});}
+      await c.query(`UPDATE ${linkedTable} SET code=$1 WHERE id=$2`,[trackingCode,req.params.id]);
+    }
+    const force=b.forcePasswordChange===undefined?u.force_password_change:!!b.forcePasswordChange;
+    const locked=b.accountLocked===undefined?u.account_locked:!!b.accountLocked;
+    const revoke=!!b.revokeSessions||!!password||username!==u.username||locked!==u.account_locked||trackingCode!==currentProfile.code;
+    const hash=password?await bcrypt.hash(password,12):u.password_hash;
+    const updated=(await c.query(`UPDATE users SET username=$1,password_hash=$2,force_password_change=$3,account_locked=$4,token_version=token_version+$5 WHERE id=$6 RETURNING id,username,role,display_name,employee_id,partner_id,status,force_password_change,account_locked,last_login_at,created_at`,[username,hash,force,locked,revoke?1:0,u.id])).rows[0];
+    await c.query('COMMIT');
+    res.json({ok:true,account:{id:updated.id,username:updated.username,role:updated.role,name:updated.display_name,employeeId:updated.employee_id,partnerId:updated.partner_id,status:updated.status,forcePasswordChange:!!updated.force_password_change,accountLocked:!!updated.account_locked,lastLoginAt:updated.last_login_at,createdAt:updated.created_at,code:trackingCode}});
+  }catch(e){await c.query('ROLLBACK');throw e;}finally{c.release();}
+});
+
 installV11({app,pool,auth,role,bcrypt,makeId,closed:new Set(['Complete','Cancelled','Void','Not Serviceable','Not Interested'])});
 app.use((err,req,res,next)=>{
   console.error('API request failed',{code:err.code||'REQUEST_ERROR',route:req.path});
@@ -199,4 +260,4 @@ app.use((err,req,res,next)=>{
   const status=err.status||(['22007','22008','23503','22P02'].includes(err.code)?400:500);
   res.status(status).json({error:status===400?'Invalid value. Check your dates and selections.':status===403?'Origin not allowed':'The server could not save this request. Please retry.'});
 });
-init().then(()=>{app.listen(PORT,()=>console.log(`GetNetDirect API v11 listening on ${PORT}; database initialized`));}).catch(e=>{console.error('Database startup failed',e.code||e.message);process.exit(1);});
+init().then(()=>{app.listen(PORT,()=>console.log(`GetNetDirect API v11.2 listening on ${PORT}; database initialized`));}).catch(e=>{console.error('Database startup failed',e.code||e.message);process.exit(1);});

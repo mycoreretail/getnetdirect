@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <title>GetNetDirect Admin Portal</title>
-<link href="styles.css?v=11" rel="stylesheet"/>
+<link href="styles.css?v=11.2.1" rel="stylesheet"/>
 <script>
     (function(){
       try{
@@ -35,7 +35,7 @@
 <div class="container dash-layout">
 <nav aria-label="Admin navigation" class="sidebar">
 <a class="side-link active" href="#overview">Overview</a>
-<a class="side-link" href="#adminActionCenter">Priority Alerts</a><a class="side-link" href="#leads">Leads</a><a class="side-link" href="reports.html">Reports &amp; Trends</a>
+<a class="side-link" href="#adminActionCenter">Priority Alerts</a><a class="side-link" href="#leads">Leads</a><a class="side-link" href="reports.html">Reports &amp; Trends</a><a class="side-link" href="#myLogin">My Login</a>
 <a class="side-link" href="#people">Team &amp; Partners</a><a class="side-link" href="#marketingAdmin">QR &amp; Flyers</a>
 <a class="side-link" href="#payouts">Payout Ledger</a><a class="side-link" href="#applications">Partner Applications</a>
 <a class="side-link" href="#recommendations">Recommendations</a>
@@ -158,6 +158,24 @@
 <div class="mobile-card-list" id="payoutLedgerCards"></div>
 </section>
 <section class="panel" id="applications"><div class="panel-head"><div><h2>Partner Application Inbox <span class="status-badge st-new" id="applicationCount">—</span></h2><p class="panel-sub">Review leasing-office and realtor applications here. Create approved accounts in Team &amp; Partners; changing an application status alone does not create a login.</p></div></div><div id="partnerApplicationInbox">Loading applications…</div></section>
+<section class="panel" id="myLogin">
+<div class="panel-head panel-head-wrap"><div><h2>My Login</h2><p class="panel-sub">Change your own Admin username or password. Your current password is required before any change is saved.</p></div></div>
+<div class="account-settings-grid">
+  <div class="account-settings-card">
+    <div class="account-current"><span class="status-badge st-complete">Signed in</span><strong id="myLoginCurrentUser">Admin</strong></div>
+    <form id="myLoginForm" autocomplete="off">
+      <div class="field"><label for="myLoginCurrentPassword">Current Password *</label><div class="password-field"><input id="myLoginCurrentPassword" name="currentPassword" type="password" autocomplete="current-password" required><button class="password-toggle" type="button" data-password-toggle="myLoginCurrentPassword">Show</button></div></div>
+      <div class="field"><label for="myLoginUsername">New Username</label><input id="myLoginUsername" name="newUsername" autocomplete="username" minlength="3" maxlength="80" placeholder="Leave unchanged to keep current username"></div>
+      <div class="field"><label for="myLoginNewPassword">New Password</label><div class="password-field"><input id="myLoginNewPassword" name="newPassword" type="password" autocomplete="new-password" minlength="8" maxlength="72" placeholder="Leave blank to keep current password"><button class="password-toggle" type="button" data-password-toggle="myLoginNewPassword">Show</button></div></div>
+      <div class="field"><label for="myLoginConfirmPassword">Confirm New Password</label><div class="password-field"><input id="myLoginConfirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="72" placeholder="Re-enter new password"><button class="password-toggle" type="button" data-password-toggle="myLoginConfirmPassword">Show</button></div></div>
+      <div class="field"><button class="btn btn-primary" type="submit">Update My Login</button></div>
+      <div class="form-status" id="myLoginStatus" aria-live="polite"></div>
+    </form>
+    <div class="notice small-notice">Use <strong>Manage Login</strong> in Team &amp; Referral Partners to reset an employee, contractor or referral partner account.</div>
+  </div>
+  <div class="recommend-card"><strong>Recommended</strong><p>Use a unique password that you do not reuse elsewhere. If you change your username, use the new username the next time you sign in.</p><p>Your active Admin session is refreshed automatically after a successful change.</p></div>
+</div>
+</section>
 <section class="panel" id="recommendations">
 <div class="panel-head"><div><h2>Recommended Operating Rules</h2><p class="panel-sub">These rules keep statuses and partner payouts consistent when you add more sales reps and referral sources.</p></div></div>
 <div class="recommendation-grid">
@@ -172,12 +190,41 @@
 </section>
 </main>
 </div>
+
+<dialog aria-labelledby="accountManagerTitle" class="account-manager-dialog" id="accountManagerDialog">
+  <button aria-label="Close account manager" class="dialog-close" data-close-account-manager type="button">×</button>
+  <span class="portal-kicker">Account Control</span>
+  <h2 id="accountManagerTitle">Manage Login</h2>
+  <p class="panel-sub" id="accountManagerSubtitle">Reset credentials and account access.</p>
+  <form id="accountManagerForm" autocomplete="off">
+    <input id="accountManagerKind" type="hidden"><input id="accountManagerId" type="hidden">
+    <div class="account-manager-summary">
+      <div><span>Current username</span><strong id="accountManagerCurrentUsername">—</strong></div>
+      <div><span>Last login</span><strong id="accountManagerLastLogin">Never</strong></div>
+      <div><span>Tracking code</span><strong id="accountManagerCode">—</strong></div>
+    </div>
+    <div class="form-grid account-manager-fields">
+      <div class="field"><label for="accountManagerUsername">Username</label><input id="accountManagerUsername" minlength="3" maxlength="80" autocomplete="off" required></div>
+      <div class="field"><label for="accountManagerTrackingCode">Tracking / Referral Code</label><input id="accountManagerTrackingCode" minlength="3" maxlength="48" autocomplete="off" required><div class="field-help">Changing this code makes old QR codes and printed flyers stop attributing new scans. Regenerate them after a code change.</div></div>
+      <div class="field"><label for="accountManagerStatus">Account Status</label><select id="accountManagerStatus"><option>Active</option><option>Pending Approval</option><option>Paused</option><option>Inactive</option></select></div>
+      <div class="field full"><label for="accountManagerPassword">Temporary / Reset Password</label><div class="password-field"><input id="accountManagerPassword" type="password" minlength="8" maxlength="72" autocomplete="new-password" placeholder="Leave blank to keep current password"><button class="password-toggle" type="button" data-password-toggle="accountManagerPassword">Show</button></div><div class="field-help">Use Generate to create a temporary password. The existing password is never displayed.</div></div>
+      <div class="field full"><div class="account-manager-actions"><button class="btn btn-secondary" id="generateTemporaryPassword" type="button">Generate Temporary Password</button><button class="btn btn-secondary" id="copyTemporaryLogin" type="button">Copy Temporary Login</button></div></div>
+      <div class="field full account-manager-options">
+        <label class="check-card"><input id="accountManagerForceChange" type="checkbox" checked> <span><strong>Require password change at next login</strong><small>Recommended after issuing a temporary password.</small></span></label>
+        <label class="check-card"><input id="accountManagerLocked" type="checkbox"> <span><strong>Lock account</strong><small>Blocks sign-in without changing the employee/partner record.</small></span></label>
+        <label class="check-card"><input id="accountManagerRevoke" type="checkbox"> <span><strong>Log out all current sessions</strong><small>Immediately invalidates existing sessions after the next request.</small></span></label>
+      </div>
+      <div class="field full"><div class="form-status" id="accountManagerStatusMessage" aria-live="polite"></div></div>
+      <div class="field full account-manager-footer"><button class="btn btn-secondary" data-close-account-manager type="button">Cancel</button><button class="btn btn-primary" type="submit">Save Account Changes</button></div>
+    </div>
+  </form>
+</dialog>
 <dialog aria-labelledby="loginAlertTitle" class="login-alert-dialog" id="loginAlertDialog"><button aria-label="Close alerts" class="dialog-close" data-dismiss-login-alert="" type="button">×</button><span class="portal-kicker">Welcome back</span><h2 id="loginAlertTitle">You have leads needing attention</h2><p id="loginAlertSummary"></p><p class="report-note">Closing this message does not clear pending work. The priority queue remains at the top of your dashboard.</p><button class="btn btn-primary" id="loginGoQueue" type="button">Review My Priority Queue</button></dialog>
 <div aria-live="polite" class="toast" id="toast"></div>
 <script crossorigin="anonymous" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="marketing.js?v=11"></script>
-<script src="api-client.js?v=11"></script><script src="auth.js?v=11"></script>
-<script src="insights-core.js?v=11"></script>
-<script src="script.js?v=11"></script><script src="admin-alerts.js?v=11"></script>
+<script src="marketing.js?v=11.2"></script>
+<script src="api-client.js?v=11.2"></script><script src="auth.js?v=11.2"></script>
+<script src="insights-core.js?v=11.2"></script>
+<script src="script.js?v=11.2"></script><script src="admin-alerts.js?v=11.2"></script><script src="account-settings.js?v=11.2"></script><script src="account-management.js?v=11.2"></script>
 </body>
 </html>

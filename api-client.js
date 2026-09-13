@@ -16,11 +16,12 @@
   }
   const send=(path,method,data,publicRequest=false)=>request(path,{method,body:JSON.stringify(data),publicRequest});
   const api={url:API_URL,token:()=>localStorage.getItem(TOKEN_KEY)||'',setToken:t=>t?localStorage.setItem(TOKEN_KEY,t):localStorage.removeItem(TOKEN_KEY),clear:()=>localStorage.removeItem(TOKEN_KEY),
-    login:async(username,password)=>{const r=await send('/auth/login','POST',{username,password},true);if(r.token)api.setToken(r.token);return r;},me:()=>request('/auth/me'),
+    login:async(username,password)=>{const r=await send('/auth/login','POST',{username,password},true);if(r.token)api.setToken(r.token);return r;},me:()=>request('/auth/me'),changeCredentials:async data=>{const r=await send('/auth/change-credentials','POST',data);if(r.token)api.setToken(r.token);return r;},
     createPublicLead:data=>send('/api/public/leads','POST',data,true),leads:()=>request('/api/leads'),updateLead:(id,data)=>send('/api/leads/'+encodeURIComponent(id),'PATCH',data),
     employees:()=>request('/api/employees'),partners:()=>request('/api/partners'),createEmployee:data=>send('/api/admin/employees','POST',data),createPartner:data=>send('/api/admin/partners','POST',data),
     reportData:()=>request('/api/admin/report-data'),activity:id=>request('/api/leads/'+encodeURIComponent(id)+'/activity'),logContact:(id,data)=>send('/api/leads/'+encodeURIComponent(id)+'/contact','POST',data),
     setAccountStatus:(kind,id,status)=>send('/api/admin/accounts/'+encodeURIComponent(kind)+'/'+encodeURIComponent(id)+'/status','PATCH',{status}),
+    accounts:()=>request('/api/admin/accounts'),manageAccount:(kind,id,data)=>send('/api/admin/accounts/'+encodeURIComponent(kind)+'/'+encodeURIComponent(id)+'/credentials','PATCH',data),
     applyPartner:data=>send('/api/public/partner-applications','POST',data,true),applications:()=>request('/api/admin/partner-applications'),setApplicationStatus:(id,status)=>send('/api/admin/partner-applications/'+encodeURIComponent(id),'PATCH',{status})
   };window.GNDAPI=api;
 })();

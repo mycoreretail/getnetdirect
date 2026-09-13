@@ -7,7 +7,7 @@
     try{const s=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');if(!s||!s.expiresAt||Date.now()>s.expiresAt){localStorage.removeItem(SESSION_KEY);window.GNDAPI?.clear?.();return null}return s}catch(e){return null}
   }
   function saveSession(user){
-    const s={username:user.username,role:user.role,name:user.name||user.displayName||user.username,employeeId:user.employeeId||null,partnerId:user.partnerId||null,employeeCode:user.employeeCode||'',partnerCode:user.partnerCode||'',destination:destination(user.role),expiresAt:Date.now()+SESSION_HOURS*60*60*1000};
+    const s={username:user.username,role:user.role,name:user.name||user.displayName||user.username,employeeId:user.employeeId||null,partnerId:user.partnerId||null,employeeCode:user.employeeCode||'',partnerCode:user.partnerCode||'',forcePasswordChange:!!user.forcePasswordChange,lastLoginAt:user.lastLoginAt||null,destination:destination(user.role),expiresAt:Date.now()+SESSION_HOURS*60*60*1000};
     localStorage.setItem(SESSION_KEY,JSON.stringify(s));
     if(s.employeeId)localStorage.setItem('gnd_employee_view',s.employeeId);
     if(s.partnerCode)localStorage.setItem('gnd_partner_code',s.partnerCode);
@@ -18,7 +18,7 @@
   }
   function logout(){localStorage.removeItem(SESSION_KEY);window.GNDAPI?.clear?.();location.href='portal.html?loggedout=1'}
   function protectPage(){
-    const required=document.body?.dataset?.requiredRole;if(!required)return;const s=getSession();if(!s){location.replace('portal.html?reason=login');return}if(s.role!=='admin'&&s.role!==required){location.replace('portal.html?reason=wrong-role');return}document.querySelectorAll('[data-auth-name]').forEach(el=>el.textContent=s.name||s.username)
+    const required=document.body?.dataset?.requiredRole;if(!required)return;const s=getSession();if(!s){location.replace('portal.html?reason=login');return}if(s.forcePasswordChange){location.replace('portal.html?reason=password-change');return}if(required!=='any'&&s.role!=='admin'&&s.role!==required){location.replace('portal.html?reason=wrong-role');return}document.querySelectorAll('[data-auth-name]').forEach(el=>el.textContent=s.name||s.username)
   }
   window.addEventListener('gnd-session-invalid',()=>{localStorage.removeItem(SESSION_KEY);window.GNDAPI?.clear?.();if(document.body?.dataset?.requiredRole)location.replace('portal.html?reason=login');});
   window.GNDAuth={login,logout,getSession,protectPage};protectPage();

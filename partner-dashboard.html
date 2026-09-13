@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
-<title>Referral Partner Portal | GetNetDirect</title><link href="styles.css?v=11" rel="stylesheet"/>
+<title>Referral Partner Portal | GetNetDirect</title><link href="styles.css?v=11.2" rel="stylesheet"/>
 <script>(function(){try{const raw=localStorage.getItem('gnd_basic_session');if(!raw){location.replace('portal.html?reason=login');return}const s=JSON.parse(raw);if(!s||!s.expiresAt||Date.now()>s.expiresAt||!['admin','partner'].includes(s.role)){location.replace('portal.html?reason=wrong-role')}}catch(e){location.replace('portal.html?reason=login')}})();</script>
 </head>
 <body class="dashboard" data-required-role="partner">
@@ -30,5 +30,5 @@
 <section class="panel" id="history"><div class="panel-head"><div><h2>Referral Status</h2><p class="panel-sub">Track whether each customer is pending, signed up, scheduled, complete, cancelled or void.</p></div></div><div class="desktop-table-only table-wrap"><table class="table"><thead><tr><th>Customer</th><th>Submitted</th><th>Service</th><th>Move-In</th><th>Status</th><th>Payout</th></tr></thead><tbody id="partnerHistoryBody"></tbody></table></div><div class="mobile-card-list" id="partnerHistoryCards"></div></section>
 <section class="panel" id="partnerPayouts"><div class="panel-head panel-head-wrap"><div><h2>Payout Ledger</h2><p class="panel-sub">See the commission amount and whether it is pending, approved, paid or void.</p></div><div class="ledger-totals"><span>Total Paid: <strong id="partnerPaidTotal">$0</strong></span></div></div><div class="desktop-table-only table-wrap"><table class="table"><thead><tr><th>Customer</th><th>Outcome</th><th>Amount</th><th>Payout</th><th>Paid Date</th><th>Reference</th></tr></thead><tbody id="partnerPayoutBody"></tbody></table></div><div class="mobile-card-list" id="partnerPayoutCards"></div></section>
 </main>
-</div><div aria-live="polite" class="toast" id="toast"></div><script crossorigin="anonymous" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><script src="marketing.js?v=11"></script><script src="api-client.js?v=11"></script><script src="auth.js?v=11"></script><script src="insights-core.js?v=11"></script>
+</div><div aria-live="polite" class="toast" id="toast"></div><script crossorigin="anonymous" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><script src="marketing.js?v=11"></script><script src="api-client.js?v=11.2"></script><script src="auth.js?v=11.2"></script><script src="insights-core.js?v=11"></script>
 <script src="script.js?v=11"></script></body></html>
