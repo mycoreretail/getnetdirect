@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Referral Partner Portal | GetNetDirect</title><link rel="stylesheet" href="styles.css?v=7">
+  <title>Referral Partner Portal | GetNetDirect</title><link rel="stylesheet" href="styles.css?v=8">
   <script>(function(){try{const raw=localStorage.getItem('gnd_basic_session');if(!raw){location.replace('portal.html?reason=login');return}const s=JSON.parse(raw);if(!s||!s.expiresAt||Date.now()>s.expiresAt||!['admin','partner'].includes(s.role)){location.replace('portal.html?reason=wrong-role')}}catch(e){location.replace('portal.html?reason=login')}})();</script>
 </head>
 <body class="dashboard" data-required-role="partner">
@@ -16,7 +16,10 @@
 
     <section class="panel status-panel"><div class="panel-head"><div><h2>Status Color Guide</h2><p class="panel-sub">These colors show where each referral is in the process.</p></div></div><div class="status-legend" id="partnerStatusLegend"></div></section>
 
-    <section class="panel" id="marketing"><div class="panel-head panel-head-wrap"><div><h2>Your Referral Tools</h2><p class="panel-sub">Share your code/link or submit the customer directly.</p></div><button class="btn btn-secondary" id="copyPartnerLink" type="button">Copy Referral Link</button></div><div class="referral-box"><span class="code" id="partnerCodeDisplay">DEMO123</span><span id="partnerLinkDisplay">https://getnetdirect.com/?ref=DEMO123</span></div></section>
+    <section class="panel" id="marketing"><div class="panel-head panel-head-wrap"><div><h2>Your Referral Tools</h2><p class="panel-sub">Share your unique code, link or QR. Every customer who scans it is tagged to your referral code.</p></div><button class="btn btn-secondary" id="copyPartnerLink" type="button">Copy Referral Link</button></div>
+      <div class="referral-box"><span class="code" id="partnerCodeDisplay">DEMO123</span><span id="partnerLinkDisplay">https://getnetdirect.com/?ref=DEMO123</span></div>
+      <div class="portal-marketing-grid"><div class="qr-preview-card"><div class="qr-frame" id="partnerQrPreview"></div><strong>My Referral QR</strong><span class="qr-helper">Customers can scan this with their phone camera.</span><div class="marketing-action-row"><button class="btn btn-primary" id="downloadPartnerQr" type="button">Download QR</button><a class="btn btn-secondary" id="partnerFlyerLink" href="marketing-tools.html">Flyers & Handouts</a></div></div><div class="marketing-copy-card"><h3>Ways to use it</h3><ul><li>Add the QR to a move-in packet or welcome folder.</li><li>Print a flyer for the leasing desk or open house.</li><li>Text the referral link directly to the customer.</li><li>Put the code on business cards or closing packets.</li></ul><a class="btn btn-secondary" id="partnerMarketingKitLink" href="marketing-tools.html">Open Marketing Kit</a></div></div>
+    </section>
 
     <section class="panel" id="submit"><div class="panel-head"><div><h2>Submit a New Referral</h2><p class="panel-sub">Enter basic contact and move-in information. Do not enter SSNs, payment cards or carrier passwords.</p></div></div>
       <form id="referralForm"><div class="form-grid">
@@ -30,4 +33,4 @@
 
     <section class="panel" id="partnerPayouts"><div class="panel-head panel-head-wrap"><div><h2>Payout Ledger</h2><p class="panel-sub">See the commission amount and whether it is pending, approved, paid or void.</p></div><div class="ledger-totals"><span>Total Paid: <strong id="partnerPaidTotal">$0</strong></span></div></div><div class="desktop-table-only table-wrap"><table class="table"><thead><tr><th>Customer</th><th>Outcome</th><th>Amount</th><th>Payout</th><th>Paid Date</th><th>Reference</th></tr></thead><tbody id="partnerPayoutBody"></tbody></table></div><div class="mobile-card-list" id="partnerPayoutCards"></div></section>
   </main>
-</div><div id="toast" class="toast" aria-live="polite"></div><script src="auth.js?v=7"></script><script src="script.js?v=7"></script></body></html>
+</div><div id="toast" class="toast" aria-live="polite"></div><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><script src="marketing.js?v=8"></script><script src="auth.js?v=8"></script><script src="script.js?v=8"></script></body></html>

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>GetNetDirect Admin Portal</title>
-  <link rel="stylesheet" href="styles.css?v=7">
+  <link rel="stylesheet" href="styles.css?v=8">
   <script>
     (function(){
       try{
@@ -36,7 +36,7 @@
     <nav class="sidebar" aria-label="Admin navigation">
       <a class="side-link active" href="#overview">Overview</a>
       <a class="side-link" href="#leads">Leads</a>
-      <a class="side-link" href="#people">Team & Partners</a>
+      <a class="side-link" href="#people">Team & Partners</a><a class="side-link" href="#marketingAdmin">QR & Flyers</a>
       <a class="side-link" href="#payouts">Payout Ledger</a>
       <a class="side-link" href="#recommendations">Recommendations</a>
     </nav>
@@ -101,11 +101,12 @@
               <div class="field"><label>Email *</label><input name="email" type="email" required></div>
               <div class="field"><label>Phone</label><input name="phone" type="tel"></div>
               <div class="field"><label>Type</label><select name="role"><option>Employee Sales Rep</option><option>Contractor Sales Rep</option><option>Sales Manager</option><option>Customer Service</option><option>Field Sales</option></select></div>
+              <div class="field code-field"><label>Referral / Rep Code</label><div class="code-input-row"><input name="code" id="employeeCodeInput" placeholder="Auto-generated if blank"><button class="btn btn-secondary compact-btn" type="button" data-generate-code="employee">Generate</button></div></div>
               <div class="field"><label>Account Status</label><select name="status"><option>Active</option><option>Pending</option><option>Inactive</option></select></div>
               <div class="field form-action"><button class="btn btn-primary" type="submit">Add Rep</button></div>
               <div class="form-status employee-status"></div>
             </form>
-            <div class="table-wrap people-table-wrap"><table class="table people-table"><thead><tr><th>Name</th><th>Type</th><th>Leads</th><th>Status</th><th></th></tr></thead><tbody id="employeeTableBody"></tbody></table></div>
+            <div class="table-wrap people-table-wrap"><table class="table people-table"><thead><tr><th>Name</th><th>Type</th><th>Code</th><th>Leads</th><th>Status</th><th></th></tr></thead><tbody id="employeeTableBody"></tbody></table></div>
           </div>
 
           <div class="people-column">
@@ -116,12 +117,27 @@
               <div class="field"><label>Email *</label><input name="email" type="email" required></div>
               <div class="field"><label>Phone</label><input name="phone" type="tel"></div>
               <div class="field"><label>Partner Type</label><select name="partnerType"><option>Leasing Office</option><option>Realtor / Real Estate Agent</option><option>Property Manager</option><option>Builder</option><option>Moving Company</option><option>Insurance Agent</option><option>Other</option></select></div>
+              <div class="field code-field"><label>Referral Code</label><div class="code-input-row"><input name="code" id="partnerCodeInput" placeholder="Auto-generated if blank"><button class="btn btn-secondary compact-btn" type="button" data-generate-code="partner">Generate</button></div></div>
               <div class="field"><label>Account Status</label><select name="status"><option>Active</option><option>Pending Approval</option><option>Paused</option><option>Inactive</option></select></div>
               <div class="field form-action"><button class="btn btn-primary" type="submit">Add Partner</button></div>
               <div class="form-status partner-status"></div>
             </form>
             <div class="table-wrap people-table-wrap"><table class="table people-table"><thead><tr><th>Partner</th><th>Code</th><th>Referrals</th><th>Status</th><th></th></tr></thead><tbody id="partnerTableBody"></tbody></table></div>
           </div>
+        </div>
+      </section>
+
+
+      <section class="panel" id="marketingAdmin">
+        <div class="panel-head panel-head-wrap"><div><h2>QR Code & Flyer Generator</h2><p class="panel-sub">Create a trackable QR code and printable flyer for any referral partner or sales rep. Every scan uses that person's unique referral code.</p></div></div>
+        <div class="marketing-admin-grid">
+          <div class="marketing-admin-controls">
+            <div class="field"><label>Partner / Team Member</label><select id="adminMarketingProfile"><option value="">Select a profile</option></select></div>
+            <div class="field"><label>Referral Link</label><div class="copy-field-row"><input id="adminMarketingLink" readonly placeholder="Select a profile"><button class="btn btn-secondary compact-btn" type="button" id="copyAdminMarketingLink">Copy</button></div></div>
+            <div class="marketing-action-row"><button class="btn btn-primary" type="button" id="downloadAdminQr" disabled>Download QR</button><a class="btn btn-secondary disabled-link" id="openAdminFlyer" href="#" aria-disabled="true">Open Flyer Designer</a></div>
+            <div class="notice small-notice">Tip: Put the QR on leasing-office move-in packets, realtor closing folders, business cards, countertop signs and handout flyers.</div>
+          </div>
+          <div class="qr-preview-card"><div class="qr-frame" id="adminQrPreview"><div class="qr-placeholder">Select a profile to generate a QR code</div></div><strong id="adminQrName">GetNetDirect Referral QR</strong><span id="adminQrCode" class="code">—</span></div>
         </div>
       </section>
 
@@ -149,7 +165,9 @@
   </div>
 
   <div id="toast" class="toast" aria-live="polite"></div>
-  <script src="auth.js?v=7"></script>
-  <script src="script.js?v=7"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="marketing.js?v=8"></script>
+  <script src="auth.js?v=8"></script>
+  <script src="script.js?v=8"></script>
 </body>
 </html>

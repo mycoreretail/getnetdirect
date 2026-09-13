@@ -47,3 +47,10 @@ Recommended live architecture:
 GetNetDirect.com public site -> shared API/database -> Admin Portal / Sales Rep Portal / Partner Portal
 
 Do not collect Social Security numbers, full card information or carrier passwords in these lead forms.
+
+
+MARKETING TOOLS (v8)
+- Admin can generate a unique code, QR and flyer for each partner or team rep.
+- Partner and employee portals include QR download and flyer access.
+- QR links use https://getnetdirect.com/?ref=CODE.
+- Flyer designer supports Letter and Half Sheet print layouts and browser Print/Save PDF.
