@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <title>GetNetDirect Admin Portal</title>
-<link href="styles.css?v=11.3.1" rel="stylesheet"/>
+<link href="styles.css?v=11.4.1" rel="stylesheet"/>
 <script>
     (function(){
       try{
@@ -171,7 +171,7 @@
       <div class="field"><button class="btn btn-primary" type="submit">Update My Login</button></div>
       <div class="form-status" id="myLoginStatus" aria-live="polite"></div>
     </form>
-    <div class="notice small-notice">Go to <strong>Team &amp; Referral Partners</strong> and click <strong>Set / Reset Login</strong> beside any employee, contractor, leasing office, realtor, or referral partner. You can set a new password even if they forgot the old one.</div>
+    <div class="notice small-notice">Go to <strong>Team &amp; Referral Partners</strong> and click <strong>Reset Password</strong> beside an existing employee, contractor, leasing office, realtor, or referral partner. Generate a temporary password, save it, and send it to them. Their profile is not recreated.</div>
   </div>
   <div class="recommend-card"><strong>Recommended</strong><p>Use a unique password that you do not reuse elsewhere. If you change your username, use the new username the next time you sign in.</p><p>Your active Admin session is refreshed automatically after a successful change.</p></div>
 </div>
@@ -194,9 +194,11 @@
 <dialog aria-labelledby="accountManagerTitle" class="account-manager-dialog" id="accountManagerDialog">
   <button aria-label="Close account manager" class="dialog-close" data-close-account-manager type="button">×</button>
   <span class="portal-kicker">Account Control</span>
-  <h2 id="accountManagerTitle">Set / Reset Login</h2>
-  <p class="panel-sub" id="accountManagerSubtitle">Reset credentials and account access.</p>
-  <form id="accountManagerForm" autocomplete="off">
+  <h2 id="accountManagerTitle">Manage Existing Login</h2>
+  <p class="panel-sub" id="accountManagerSubtitle">This changes the existing portal account. It does not create a new profile.</p>
+  <div class="notice existing-account-reset-note" id="existingAccountResetNote">
+<strong>Reset an existing account:</strong> Generate a temporary password, save it, and give it to the user. Their existing employee or referral-partner profile stays the same. At their next login they will be required to create their own new password.
+</div><form id="accountManagerForm" autocomplete="off">
     <input id="accountManagerKind" type="hidden"><input id="accountManagerId" type="hidden">
     <div class="account-manager-summary">
       <div><span>Current username</span><strong id="accountManagerCurrentUsername">—</strong></div>
@@ -207,24 +209,24 @@
       <div class="field"><label for="accountManagerUsername">Username</label><input id="accountManagerUsername" minlength="3" maxlength="80" autocomplete="off" required></div>
       <div class="field"><label for="accountManagerTrackingCode">Tracking / Referral Code</label><input id="accountManagerTrackingCode" minlength="3" maxlength="48" autocomplete="off" required><div class="field-help">Changing this code makes old QR codes and printed flyers stop attributing new scans. Regenerate them after a code change.</div></div>
       <div class="field"><label for="accountManagerStatus">Account Status</label><select id="accountManagerStatus"><option>Active</option><option>Pending Approval</option><option>Paused</option><option>Inactive</option></select></div>
-      <div class="field full"><label for="accountManagerPassword">Set / Reset Password</label><div class="password-field"><input id="accountManagerPassword" type="password" minlength="8" maxlength="72" autocomplete="new-password" placeholder="Leave blank to keep current password"><button class="password-toggle" type="button" data-password-toggle="accountManagerPassword">Show</button></div><div class="field-help"><strong>Forgot-password reset:</strong> type any new password here (8+ characters), or generate a temporary one. Their old password is NOT required and cannot be viewed.</div></div>
-      <div class="field full"><div class="account-manager-actions"><button class="btn btn-secondary" id="generateTemporaryPassword" type="button">Generate New Password</button><button class="btn btn-secondary" id="copyTemporaryLogin" type="button">Copy New Login</button></div></div>
+      <div class="field full"><label for="accountManagerPassword">Temporary Password</label><div class="password-field"><input id="accountManagerPassword" type="password" minlength="8" maxlength="72" autocomplete="new-password" placeholder="Leave blank to keep current password"><button class="password-toggle" type="button" data-password-toggle="accountManagerPassword">Show</button></div><div class="field-help"><strong>No old password is needed.</strong> Generate a temporary password below. Once saved, the user signs in with it and must create a new private password before entering the portal.</div></div>
+      <div class="field full"><div class="account-manager-actions"><button class="btn btn-secondary" id="generateTemporaryPassword" type="button">Generate Temporary Password</button><button class="btn btn-secondary" id="copyTemporaryLogin" type="button">Copy Temporary Login</button></div></div>
       <div class="field full account-manager-options">
         <label class="check-card"><input id="accountManagerForceChange" type="checkbox" checked> <span><strong>Require password change at next login</strong><small>Recommended after issuing a temporary password.</small></span></label>
         <label class="check-card"><input id="accountManagerLocked" type="checkbox"> <span><strong>Lock account</strong><small>Blocks sign-in without changing the employee/partner record.</small></span></label>
         <label class="check-card"><input id="accountManagerRevoke" type="checkbox"> <span><strong>Log out all current sessions</strong><small>Immediately invalidates existing sessions after the next request.</small></span></label>
       </div>
       <div class="field full"><div class="form-status" id="accountManagerStatusMessage" aria-live="polite"></div></div>
-      <div class="field full account-manager-footer"><button class="btn btn-secondary" data-close-account-manager type="button">Cancel</button><button class="btn btn-primary" type="submit">Save / Reset Login</button></div>
+      <div class="field full account-manager-footer"><button class="btn btn-secondary" data-close-account-manager type="button">Cancel</button><button class="btn btn-primary" type="submit">Save Temporary Password</button></div>
     </div>
   </form>
 </dialog>
 <dialog aria-labelledby="loginAlertTitle" class="login-alert-dialog" id="loginAlertDialog"><button aria-label="Close alerts" class="dialog-close" data-dismiss-login-alert="" type="button">×</button><span class="portal-kicker">Welcome back</span><h2 id="loginAlertTitle">You have leads needing attention</h2><p id="loginAlertSummary"></p><p class="report-note">Closing this message does not clear pending work. The priority queue remains at the top of your dashboard.</p><button class="btn btn-primary" id="loginGoQueue" type="button">Review My Priority Queue</button></dialog>
 <div aria-live="polite" class="toast" id="toast"></div>
 <script crossorigin="anonymous" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="marketing.js?v=11.3"></script>
-<script src="api-client.js?v=11.3"></script><script src="auth.js?v=11.3"></script>
-<script src="insights-core.js?v=11.3"></script>
-<script src="script.js?v=11.3"></script><script src="admin-alerts.js?v=11.3"></script><script src="account-settings.js?v=11.3"></script><script src="account-management.js?v=11.3"></script>
+<script src="marketing.js?v=11.4"></script>
+<script src="api-client.js?v=11.4"></script><script src="auth.js?v=11.4"></script>
+<script src="insights-core.js?v=11.4"></script>
+<script src="script.js?v=11.4"></script><script src="admin-alerts.js?v=11.4"></script><script src="account-settings.js?v=11.4"></script><script src="account-management.js?v=11.4"></script>
 </body>
 </html>

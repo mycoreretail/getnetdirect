@@ -539,3 +539,20 @@ section[id]{scroll-margin-top:128px}
 @media(max-width:820px){
   [data-manage-account]{min-height:44px;padding:10px 12px}
 }
+
+/* v11.4 dedicated existing-account password reset */
+.existing-account-reset-note{
+  margin:0 0 16px;
+  border-left:4px solid var(--blue);
+  background:#eef7ff;
+}
+[data-reset-password]{
+  background:#e9f5ff;
+  border-color:#9bcdf4;
+  color:#075f9f;
+  font-weight:900;
+}
+[data-reset-password]:hover{background:#dcedff}
+@media(max-width:820px){
+  [data-reset-password],[data-manage-account]{min-height:44px;padding:10px 12px;margin-top:5px}
+}
