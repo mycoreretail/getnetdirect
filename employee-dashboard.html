@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Employee / Sales Rep Portal | GetNetDirect</title>
-  <link rel="stylesheet" href="styles.css?v=9">
+  <link rel="stylesheet" href="styles.css?v=10">
   <script>
     (function(){try{const raw=localStorage.getItem('gnd_basic_session');if(!raw){location.replace('portal.html?reason=login');return}const s=JSON.parse(raw);if(!s||!s.expiresAt||Date.now()>s.expiresAt||!['admin','employee'].includes(s.role)){location.replace('portal.html?reason=wrong-role')}}catch(e){location.replace('portal.html?reason=login')}})();
   </script>
@@ -27,6 +27,8 @@
       </div>
     </section>
 
+    <section class="permission-panel employee-permission-panel"><strong>Your role: work and progress assigned leads.</strong><p>You can mark Contacted, Follow-Up, Pending Customer, Qualified, Signed Up, Install Scheduled, Not Interested or Unable to Reach. <b>Only Admin can mark Complete, Not Serviceable, Cancelled or Void and control referral payouts.</b> Signed Up and Install Scheduled are sent to Admin for verification.</p></section>
+
     <section class="panel status-panel"><div class="panel-head"><div><h2>Status Color Guide</h2><p class="panel-sub">Use these statuses consistently when working customer leads.</p></div></div><div class="status-legend" id="employeeStatusLegend"></div></section>
 
     <section class="panel" id="assignedLeads">
@@ -42,5 +44,5 @@
   </main>
 </div>
 <div id="toast" class="toast" aria-live="polite"></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><script src="marketing.js?v=9"></script><script src="api-client.js?v=9"></script><script src="auth.js?v=9"></script><script src="script.js?v=9"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><script src="marketing.js?v=10"></script><script src="api-client.js?v=10"></script><script src="auth.js?v=10"></script><script src="script.js?v=10"></script>
 </body></html>

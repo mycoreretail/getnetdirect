@@ -440,3 +440,16 @@ input,select,textarea,button{min-width:0;max-width:100%}
 .referral-tracking-notice{max-width:930px;margin:-18px auto 18px;display:flex;align-items:flex-start;gap:12px;background:#eef8ff;border:1px solid #b9ddf7;color:#17486d;padding:14px 16px;border-radius:14px;box-shadow:0 8px 22px rgba(11,37,84,.06)}
 .referral-tracking-notice[hidden]{display:none!important}.referral-tracking-icon{flex:0 0 auto;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#0f9f6e;color:#fff;font-weight:900}.referral-tracking-notice div{display:grid;gap:2px}.referral-tracking-notice strong{color:#0b2554}.referral-tracking-notice span{font-size:13px}.referral-tracking-notice b{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#0a6de0}
 @media(max-width:640px){.referral-tracking-notice{margin:-8px auto 14px;padding:12px 13px;border-radius:12px}.referral-tracking-notice span{font-size:12px}}
+
+
+/* v10 role permissions + admin verification */
+.review-chip{display:inline-flex;align-items:center;margin:6px 0 0 6px;padding:4px 8px;border-radius:999px;background:#fff4d6;border:1px solid #f0cf7a;color:#8a5a00;font-size:10px;font-weight:900;line-height:1.2;vertical-align:middle}
+.employee-review-chip{display:block;width:max-content;margin-left:0}
+.admin-review-note{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border:1px solid #efcf78;border-radius:12px;background:#fff8e7;color:#6f4c00}
+.admin-review-note strong{color:#5a3c00}.admin-review-note span{font-size:12px;line-height:1.45}
+.permission-panel{margin:0 0 18px;padding:16px 18px;border-radius:16px;border:1px solid #cddbec;background:#f7fbff;color:#344861}
+.permission-panel strong{display:block;color:var(--navy);font-size:15px;margin-bottom:5px}.permission-panel p{margin:0;font-size:13px;line-height:1.55}
+.employee-permission-panel{border-left:5px solid #6c5ce7}.partner-permission-panel{border-left:5px solid #138cf3}
+.locked-status{display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-height:44px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:#f7f9fc}.locked-status small,.field-help{display:block;color:#6b7a90;font-size:11px;line-height:1.4;margin-top:4px}
+.permission-banner{border-left:5px solid #6c5ce7}
+@media(max-width:640px){.review-chip{margin-left:0;display:flex;width:max-content;max-width:100%}.permission-panel{padding:14px}.admin-review-note{padding:11px 12px}.locked-status{width:100%}}

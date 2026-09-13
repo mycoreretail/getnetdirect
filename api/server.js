@@ -22,6 +22,7 @@ app.use(express.json({limit:'1mb'}));
 
 const LEAD_STATUSES=['New','Assigned','Contacted','Follow-Up','Pending Customer','Qualified','Signed Up','Install Scheduled','Complete','Not Interested','Unable to Reach','Not Serviceable','Cancelled','Void'];
 const PAYOUT_STATUSES=['Not Eligible','Pending','Approved','Paid','Void'];
+const EMPLOYEE_EDIT_STATUSES=['Contacted','Follow-Up','Pending Customer','Qualified','Signed Up','Install Scheduled','Not Interested','Unable to Reach'];
 const makeId=(p)=>`${p}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
 const cleanCode=v=>String(v||'').trim().toUpperCase().replace(/[^A-Z0-9-]/g,'');
 
@@ -107,6 +108,14 @@ app.patch('/api/leads/:id',auth,async(req,res)=>{
   const cur=(await pool.query('SELECT * FROM leads WHERE id=$1',[id])).rows[0]; if(!cur)return res.status(404).json({error:'Lead not found'});
   if(req.user.role==='employee'&&cur.employee_id!==req.user.employeeId)return res.status(403).json({error:'Not allowed'});
   if(req.user.role==='partner')return res.status(403).json({error:'Partners cannot edit lead records'});
+  if(b.status!==undefined){
+    const requested=String(b.status||'');
+    if(!LEAD_STATUSES.includes(requested))return res.status(400).json({error:'Invalid lead status'});
+    if(req.user.role==='employee'&&!EMPLOYEE_EDIT_STATUSES.includes(requested)){
+      return res.status(403).json({error:'Only an administrator can set Complete, Not Serviceable, Cancelled, Void, New or Assigned statuses'});
+    }
+  }
+  if(b.payoutStatus!==undefined&&!PAYOUT_STATUSES.includes(String(b.payoutStatus||'')))return res.status(400).json({error:'Invalid payout status'});
   const allowed=req.user.role==='admin'?['employee_id','status','priority','next_follow_up','provider','order_number','install_date','internal_notes','payout_amount','payout_status','payout_paid_date','payout_reference']:['status','next_follow_up','provider','order_number','install_date','internal_notes'];
   const map={employeeId:'employee_id',status:'status',priority:'priority',nextFollowUp:'next_follow_up',provider:'provider',orderNumber:'order_number',installDate:'install_date',internalNotes:'internal_notes',payoutAmount:'payout_amount',payoutStatus:'payout_status',payoutPaidDate:'payout_paid_date',payoutReference:'payout_reference'};
   const sets=[],vals=[]; for(const [k,v] of Object.entries(b)){const col=map[k]||k;if(allowed.includes(col)){vals.push(v===''?null:v);sets.push(`${col}=$${vals.length}`)}}

@@ -1,0 +1,34 @@
+GetNetDirect Portal Permissions - v10
+
+ADMIN / MANAGEMENT
+- View every lead
+- Assign/reassign sales reps
+- Set every lead status
+- Only role that can set Complete, Not Serviceable, Cancelled or Void
+- Verify employee-reported Signed Up and Install Scheduled leads
+- Control referral payout amount/status/date/reference
+- Create employee/contractor and referral partner accounts
+
+EMPLOYEE / CONTRACTOR SALES REP
+- View only assigned leads
+- Call, text and email assigned customers
+- Update: Contacted, Follow-Up, Pending Customer, Qualified, Signed Up, Install Scheduled, Not Interested, Unable to Reach
+- Enter follow-up date, provider, order/confirmation number, install date and sales notes
+- Cannot set Complete, Not Serviceable, Cancelled or Void
+- Cannot edit payouts
+- Signed Up and Install Scheduled are flagged for Admin verification
+
+REFERRAL PARTNER
+- Submit referrals
+- View only their attributed referrals
+- Track lead status and payout ledger
+- Download/copy their referral QR, link and flyers
+- Cannot edit lead status, internal notes, assignment or payouts
+
+RECOMMENDED FLOW
+New -> Assigned -> Contacted / Follow-Up -> Qualified -> Signed Up -> Install Scheduled -> Admin verifies -> Complete
+If the customer declines: Not Interested
+If unreachable: Unable to Reach
+If service cannot be provided: Admin uses Not Serviceable
+If an order later cancels: Admin uses Cancelled
+Duplicates/tests/fake/invalid records: Admin uses Void

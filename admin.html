@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>GetNetDirect Admin Portal</title>
-  <link rel="stylesheet" href="styles.css?v=9">
+  <link rel="stylesheet" href="styles.css?v=10">
   <script>
     (function(){
       try{
@@ -52,15 +52,16 @@
           <button class="btn btn-secondary" id="refreshAdmin" type="button">Refresh</button>
         </div>
 
-        <div class="go-live-banner">
-          <strong>Go-live note:</strong> the interface below is ready for workflow testing. The current GitHub-only build stores data in each browser. A shared database is required before separate employees and leasing/realtor partners can see the same live records from different devices.
+        <div class="go-live-banner permission-banner">
+          <strong>Admin controls final outcomes.</strong> Employees can work and progress assigned leads, but only Admin can mark Complete, Not Serviceable, Cancelled or Void, and only Admin controls referral payouts. Signed Up and Install Scheduled leads are flagged for your verification.
         </div>
 
         <div class="stats admin-stats">
           <div class="stat"><div class="label">Total Leads</div><div class="value" id="statLeads">0</div><div class="sub">All sources</div></div>
           <div class="stat"><div class="label">Open</div><div class="value" id="statOpen">0</div><div class="sub">Needs action</div></div>
           <div class="stat"><div class="label">Signed Up</div><div class="value" id="statSignedUp">0</div><div class="sub">Won customers</div></div>
-          <div class="stat"><div class="label">Complete</div><div class="value" id="statInstalled">0</div><div class="sub">Completed installs</div></div>
+          <div class="stat"><div class="label">Needs Review</div><div class="value" id="statNeedsReview">0</div><div class="sub">Signup/install verification</div></div>
+          <div class="stat"><div class="label">Complete</div><div class="value" id="statInstalled">0</div><div class="sub">Admin-verified completion</div></div>
           <div class="stat"><div class="label">Unpaid Payouts</div><div class="value" id="statUnpaidPayouts">$0</div><div class="sub">Pending + approved</div></div>
         </div>
       </section>
@@ -160,6 +161,7 @@
           <article class="recommend-card"><strong>Use Void for bad records</strong><p>Duplicates, test leads, fake submissions and records entered by mistake should be Void — not Cancelled.</p></article>
           <article class="recommend-card"><strong>Use Cancelled after an order</strong><p>Use Cancelled when a customer started or completed an order and later cancelled it.</p></article>
           <article class="recommend-card"><strong>Use Not Interested separately</strong><p>This makes your conversion reporting more accurate than grouping every lost customer under Cancelled.</p></article>
+          <article class="recommend-card"><strong>Admin owns final outcomes</strong><p>Employees may report Signed Up or Install Scheduled, but only Admin should mark Complete, Not Serviceable, Cancelled or Void after verification.</p></article>
           <article class="recommend-card"><strong>Approve payout after eligibility</strong><p>Keep partner payout Pending until your payout rule is met, then Approved, then Paid with date and payment reference.</p></article>
           <article class="recommend-card"><strong>Set a next follow-up date</strong><p>Every open lead should have a next action date so leads do not disappear in the dashboard.</p></article>
           <article class="recommend-card"><strong>One account per person/business</strong><p>Each employee, contractor rep, leasing office or realtor should have their own account so attribution stays clean.</p></article>
@@ -170,8 +172,8 @@
 
   <div id="toast" class="toast" aria-live="polite"></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="marketing.js?v=9"></script>
-  <script src="api-client.js?v=9"></script><script src="auth.js?v=9"></script>
-  <script src="script.js?v=9"></script>
+  <script src="marketing.js?v=10"></script>
+  <script src="api-client.js?v=10"></script><script src="auth.js?v=10"></script>
+  <script src="script.js?v=10"></script>
 </body>
 </html>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Referral Partner Portal | GetNetDirect</title><link rel="stylesheet" href="styles.css?v=9">
+  <title>Referral Partner Portal | GetNetDirect</title><link rel="stylesheet" href="styles.css?v=10">
   <script>(function(){try{const raw=localStorage.getItem('gnd_basic_session');if(!raw){location.replace('portal.html?reason=login');return}const s=JSON.parse(raw);if(!s||!s.expiresAt||Date.now()>s.expiresAt||!['admin','partner'].includes(s.role)){location.replace('portal.html?reason=wrong-role')}}catch(e){location.replace('portal.html?reason=login')}})();</script>
 </head>
 <body class="dashboard" data-required-role="partner">
@@ -13,6 +13,8 @@
     <section id="partnerOverview"><span class="portal-kicker">Partner Network</span><h1>Referral Partner Dashboard</h1><p class="dash-intro">Submit customers and track their progress without seeing internal sales notes or private order details.</p>
       <div class="stats"><div class="stat"><div class="label">Referrals</div><div class="value" id="partnerStatReferrals">0</div><div class="sub">Submitted</div></div><div class="stat"><div class="label">Signed Up</div><div class="value" id="partnerStatSigned">0</div><div class="sub">Won customers</div></div><div class="stat"><div class="label">Pending</div><div class="value" id="partnerStatPending">0</div><div class="sub">Still in progress</div></div><div class="stat"><div class="label">Approved Payout</div><div class="value" id="partnerStatApproved">$0</div><div class="sub">Not yet paid</div></div></div>
     </section>
+
+    <section class="permission-panel partner-permission-panel"><strong>Your referrals are view-only after submission.</strong><p>You can submit referrals, track customer progress, download your QR/flyers and view payout status. GetNetDirect Admin verifies final outcomes and controls Complete, Cancelled, Void and all payout decisions.</p></section>
 
     <section class="panel status-panel"><div class="panel-head"><div><h2>Status Color Guide</h2><p class="panel-sub">These colors show where each referral is in the process.</p></div></div><div class="status-legend" id="partnerStatusLegend"></div></section>
 
@@ -33,4 +35,4 @@
 
     <section class="panel" id="partnerPayouts"><div class="panel-head panel-head-wrap"><div><h2>Payout Ledger</h2><p class="panel-sub">See the commission amount and whether it is pending, approved, paid or void.</p></div><div class="ledger-totals"><span>Total Paid: <strong id="partnerPaidTotal">$0</strong></span></div></div><div class="desktop-table-only table-wrap"><table class="table"><thead><tr><th>Customer</th><th>Outcome</th><th>Amount</th><th>Payout</th><th>Paid Date</th><th>Reference</th></tr></thead><tbody id="partnerPayoutBody"></tbody></table></div><div class="mobile-card-list" id="partnerPayoutCards"></div></section>
   </main>
-</div><div id="toast" class="toast" aria-live="polite"></div><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><script src="marketing.js?v=9"></script><script src="api-client.js?v=9"></script><script src="auth.js?v=9"></script><script src="script.js?v=9"></script></body></html>
+</div><div id="toast" class="toast" aria-live="polite"></div><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><script src="marketing.js?v=10"></script><script src="api-client.js?v=10"></script><script src="auth.js?v=10"></script><script src="script.js?v=10"></script></body></html>
