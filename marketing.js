@@ -2,7 +2,7 @@
   'use strict';
   const $=(s,r=document)=>r.querySelector(s);
   const params=new URLSearchParams(location.search);
-  function referralUrl(code){return `https://getnetdirect.com/?ref=${encodeURIComponent(String(code||'').trim())}`}
+  function referralUrl(code){return `https://getnetdirect.com/?ref=${encodeURIComponent(String(code||'').trim())}#availability`}
   function getEl(elOrId){return typeof elOrId==='string'?document.getElementById(elOrId):elOrId}
   function renderQR(elOrId,text,size=200){
     const el=getEl(elOrId); if(!el)return;

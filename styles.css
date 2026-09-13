@@ -435,3 +435,8 @@ input,select,textarea,button{min-width:0;max-width:100%}
 
 @media print{
   body.marketing-page{background:#fff!important;margin:0!important;padding:0!important}.no-print,.toast{display:none!important}.marketing-kit-layout{display:block!important;width:auto!important;margin:0!important;padding:0!important}.flyer-stage{display:block!important;padding:0!important;margin:0!important;overflow:visible!important}.flyer-sheet{box-shadow:none!important;transform:none!important;margin:0!important}.flyer-size-letter{width:8.5in!important;min-height:11in!important}.flyer-size-half{width:5.5in!important;min-height:8.5in!important;margin:0 auto!important}@page{size:letter;margin:0}}
+
+/* v8.1 referral tracking confirmation */
+.referral-tracking-notice{max-width:930px;margin:-18px auto 18px;display:flex;align-items:flex-start;gap:12px;background:#eef8ff;border:1px solid #b9ddf7;color:#17486d;padding:14px 16px;border-radius:14px;box-shadow:0 8px 22px rgba(11,37,84,.06)}
+.referral-tracking-notice[hidden]{display:none!important}.referral-tracking-icon{flex:0 0 auto;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#0f9f6e;color:#fff;font-weight:900}.referral-tracking-notice div{display:grid;gap:2px}.referral-tracking-notice strong{color:#0b2554}.referral-tracking-notice span{font-size:13px}.referral-tracking-notice b{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#0a6de0}
+@media(max-width:640px){.referral-tracking-notice{margin:-8px auto 14px;padding:12px 13px;border-radius:12px}.referral-tracking-notice span{font-size:12px}}

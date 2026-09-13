@@ -1,0 +1,9 @@
+GetNetDirect QR Tracking Fix v8.1
+
+- QR/referral links now deep-link customers directly to the Check Availability form using ?ref=CODE#availability.
+- Referral/employee code remains attached when customers tap any on-page Check Availability button because the query parameter remains on the page.
+- The referral code is copied into both customer forms automatically.
+- Tracking is kept for the current browser tab/session instead of indefinitely in localStorage, reducing accidental attribution on future unrelated visits.
+- A visible "Referral tracking is active" confirmation appears above the detailed form when a QR/referral code is present.
+
+NOTE: Shared cross-device lead visibility still requires the Railway/Postgres backend integration.
