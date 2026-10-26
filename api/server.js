@@ -13,7 +13,7 @@ const app=express();
 app.disable('x-powered-by');
 app.set('trust proxy',1);
 // Express 4 needs explicit forwarding of rejected async handlers.
-for(const method of ['get','post','patch']){
+for(const method of ['get','post','patch','delete']){
   const register=app[method].bind(app);
   app[method]=(path,...handlers)=>handlers.length?register(path,...handlers.map(fn=>(req,res,next)=>Promise.resolve().then(()=>fn(req,res,next)).catch(next))):register(path);
 }
@@ -83,7 +83,7 @@ async function auth(req,res,next){
 }
 function role(...roles){return (req,res,next)=>roles.includes(req.user.role)?next():res.status(403).json({error:'Not allowed'});}
 
-app.get('/health',async(req,res)=>{try{await pool.query('SELECT 1');res.json({ok:true,version:'11.2',serverTime:new Date().toISOString()});}catch(e){res.status(503).json({ok:false,error:'Database unavailable'});}});
+app.get('/health',async(req,res)=>{try{await pool.query('SELECT 1');res.json({ok:true,version:'11.6',serverTime:new Date().toISOString()});}catch(e){res.status(503).json({ok:false,error:'Database unavailable'});}});
 app.post('/auth/login',rateLimit({maximum:15,windowMs:15*60000}),async(req,res)=>{
   const {username,password}=req.body||{};
   if(typeof username!=='string'||typeof password!=='string'||username.length>120||password.length>200)return res.status(400).json({error:'Invalid credentials'});
@@ -189,6 +189,20 @@ app.patch('/api/leads/:id',auth,role('admin','employee'),async(req,res)=>{
     await addActivity(c,{leadId:id,actorId:req.user.sub,type:admin?'Admin Update':'Sales Update',from:cur.status,to:requestedStatus,details:{fields:changed}});
     await c.query('COMMIT');res.json({lead:q.rows[0]});
   }catch(e){await c.query('ROLLBACK');throw e;}finally{c.release();}
+});
+
+app.delete('/api/leads/:id',auth,role('admin'),async(req,res)=>{
+  const id=req.params.id;
+  const client=await pool.connect();
+  try{
+    await client.query('BEGIN');
+    const lead=(await client.query('SELECT id,first_name,last_name,phone FROM leads WHERE id=$1 FOR UPDATE',[id])).rows[0];
+    if(!lead){await client.query('ROLLBACK');return res.status(404).json({error:'Lead not found'});}
+    await client.query('DELETE FROM lead_activity WHERE lead_id=$1',[id]);
+    await client.query('DELETE FROM leads WHERE id=$1',[id]);
+    await client.query('COMMIT');
+    res.json({ok:true,deleted:id});
+  }catch(e){await client.query('ROLLBACK');throw e;}finally{client.release();}
 });
 
 app.get('/api/employees',auth,role('admin'),async(req,res)=>res.json({employees:(await pool.query('SELECT * FROM employees ORDER BY created_at DESC')).rows}));
