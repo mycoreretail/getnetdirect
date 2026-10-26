@@ -91,4 +91,9 @@ export function installV11({app,pool,auth,role,bcrypt,makeId,closed}){
     const status=req.body?.status;if(!['Pending Review','Contacted','Account Created','Declined'].includes(status))return res.status(400).json({error:'Invalid application status'});
     const q=await pool.query('UPDATE partner_applications SET status=$1 WHERE id=$2 RETURNING id',[status,req.params.id]);if(!q.rowCount)return res.status(404).json({error:'Application not found'});res.json({ok:true});
   });
+  app.delete('/api/admin/partner-applications/:id',auth,role('admin'),async(req,res)=>{
+    const q=await pool.query('DELETE FROM partner_applications WHERE id=$1 RETURNING id',[req.params.id]);
+    if(!q.rowCount)return res.status(404).json({error:'Application not found'});
+    res.json({ok:true,deleted:req.params.id});
+  });
 }
