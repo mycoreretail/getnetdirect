@@ -14,7 +14,7 @@
     return s;
   }
   async function login(username,password){
-    try{if(!window.GNDAPI)throw new Error('Portal service unavailable');const r=await window.GNDAPI.login(String(username||'').trim(),String(password||''));if(!r?.user)return{ok:false,error:'Invalid login'};const s=saveSession(r.user);return{ok:true,user:s}}catch(e){return{ok:false,error:e.message||'Login failed'}}
+    try{if(!window.GNDAPI)throw new Error('Portal service unavailable');const normalizedUsername=String(username||'').trim().toLowerCase();const r=await window.GNDAPI.login(normalizedUsername,String(password||''));if(!r?.user)return{ok:false,error:'Invalid login'};const s=saveSession(r.user);return{ok:true,user:s}}catch(e){return{ok:false,error:e.message||'Login failed'}}
   }
   function logout(){localStorage.removeItem(SESSION_KEY);window.GNDAPI?.clear?.();location.href='portal.html?loggedout=1'}
   function protectPage(){
