@@ -22,6 +22,6 @@
     reportData:()=>request('/api/admin/report-data'),activity:id=>request('/api/leads/'+encodeURIComponent(id)+'/activity'),logContact:(id,data)=>send('/api/leads/'+encodeURIComponent(id)+'/contact','POST',data),
     setAccountStatus:(kind,id,status)=>send('/api/admin/accounts/'+encodeURIComponent(kind)+'/'+encodeURIComponent(id)+'/status','PATCH',{status}),
     accounts:()=>request('/api/admin/accounts'),manageAccount:(kind,id,data)=>send('/api/admin/accounts/'+encodeURIComponent(kind)+'/'+encodeURIComponent(id)+'/credentials','PATCH',data),
-    applyPartner:data=>send('/api/public/partner-applications','POST',data,true),applications:()=>request('/api/admin/partner-applications'),setApplicationStatus:(id,status)=>send('/api/admin/partner-applications/'+encodeURIComponent(id),'PATCH',{status})
+    applyPartner:data=>send('/api/public/partner-applications','POST',data,true),applications:()=>request('/api/admin/partner-applications'),setApplicationStatus:(id,status)=>send('/api/admin/partner-applications/'+encodeURIComponent(id),'PATCH',{status}),deleteApplication:id=>send('/api/admin/partner-applications/'+encodeURIComponent(id),'DELETE')
   };window.GNDAPI=api;
 })();
