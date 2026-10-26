@@ -3,58 +3,143 @@
 
   const $=(s,r=document)=>r.querySelector(s);
   const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+  const MOBILE_NAV_MAX=1100;
 
-  function setupActiveSidebar(){
+  function isMobileNav(){return window.matchMedia('(max-width: '+MOBILE_NAV_MAX+'px)').matches;}
+
+  function closeMobileNav(){
+    document.body.classList.remove('mobile-nav-open');
+    const button=$('#mobileDashboardMenu');
+    if(button)button.setAttribute('aria-expanded','false');
+  }
+  function openMobileNav(){
+    document.body.classList.add('mobile-nav-open');
+    const button=$('#mobileDashboardMenu');
+    if(button)button.setAttribute('aria-expanded','true');
+  }
+
+  function setupNavigation(){
     const sidebar=$('.sidebar');
     if(!sidebar)return;
-    const links=$$('.side-link[href^="#"]',sidebar);
-    if(!links.length)return;
-    const targets=links.map(link=>{
-      const hash=link.getAttribute('href');
-      return {link,hash,target:hash&&hash.length>1?document.querySelector(hash):null};
-    }).filter(x=>x.target);
 
-    function activate(link){
-      $$('.side-link.active',sidebar).forEach(a=>a.classList.remove('active'));
-      if(link){
-        link.classList.add('active');
-        try{link.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});}catch{}
+    if(!$('#mobileDashboardMenu')){
+      const actions=$('.dash-nav-actions');
+      if(actions){
+        const button=document.createElement('button');
+        button.id='mobileDashboardMenu';
+        button.className='btn btn-secondary mobile-dashboard-menu';
+        button.type='button';
+        button.setAttribute('aria-expanded','false');
+        button.setAttribute('aria-controls','portalSidebar');
+        button.innerHTML='<span aria-hidden="true">☰</span><span>Menu</span>';
+        actions.insertBefore(button,actions.firstChild);
       }
     }
+    sidebar.id=sidebar.id||'portalSidebar';
 
-    links.forEach(link=>link.addEventListener('click',()=>activate(link)));
+    if(!$('#mobileNavOverlay')){
+      const overlay=document.createElement('button');
+      overlay.type='button';
+      overlay.id='mobileNavOverlay';
+      overlay.className='mobile-nav-overlay';
+      overlay.setAttribute('aria-label','Close portal menu');
+      document.body.appendChild(overlay);
+    }
+
+    const allLinks=$$('.side-link',sidebar);
+    const sectionLinks=allLinks.map(link=>{
+      const href=link.getAttribute('href')||'';
+      if(!href.startsWith('#')||href.length<2)return null;
+      const target=document.querySelector(href);
+      return target?{link,href,target}:null;
+    }).filter(Boolean);
+
+    function activate(link){
+      allLinks.forEach(a=>{
+        a.classList.toggle('active',a===link);
+        if(a===link)a.setAttribute('aria-current','location');
+        else if(a.getAttribute('aria-current')==='location')a.removeAttribute('aria-current');
+      });
+    }
+
+    function goToSection(item){
+      activate(item.link);
+      const perform=()=>{
+        const header=$('.dash-nav');
+        const offset=(header?.getBoundingClientRect().height||72)+12;
+        const top=item.target.getBoundingClientRect().top+window.scrollY-offset;
+        window.scrollTo({top:Math.max(0,top),behavior:'smooth'});
+        try{history.replaceState(null,'',item.href);}catch{}
+      };
+      if(isMobileNav()){
+        closeMobileNav();
+        setTimeout(perform,220);
+      }else perform();
+    }
+
+    allLinks.forEach(link=>link.addEventListener('click',e=>{
+      const href=link.getAttribute('href')||'';
+      if(href.startsWith('#')&&href.length>1){
+        const item=sectionLinks.find(x=>x.link===link);
+        if(item){e.preventDefault();goToSection(item);}
+      }else if(isMobileNav()){
+        closeMobileNav();
+      }
+    }));
 
     let scheduled=false;
     function updateFromScroll(){
       scheduled=false;
-      const marker=Math.min(165,window.innerHeight*.28);
-      let best=null,bestTop=-Infinity;
-      for(const item of targets){
+      if(!sectionLinks.length)return;
+      const header=$('.dash-nav');
+      const marker=(header?.getBoundingClientRect().height||72)+36;
+      let best=null;
+      for(const item of sectionLinks){
         const rect=item.target.getBoundingClientRect();
-        if(rect.top<=marker && rect.bottom>70 && rect.top>bestTop){best=item;bestTop=rect.top;}
+        if(rect.top<=marker)best=item;
       }
       if(!best){
-        let distance=Infinity;
-        for(const item of targets){
+        best=sectionLinks.reduce((closest,item)=>{
           const d=Math.abs(item.target.getBoundingClientRect().top-marker);
-          if(d<distance){distance=d;best=item;}
-        }
+          return !closest||d<closest.d?{item,d}:closest;
+        },null)?.item;
       }
       if(best)activate(best.link);
     }
+
     window.addEventListener('scroll',()=>{if(!scheduled){scheduled=true;requestAnimationFrame(updateFromScroll);}}, {passive:true});
+    window.addEventListener('resize',()=>{
+      if(!isMobileNav())closeMobileNav();
+      updateFromScroll();
+    },{passive:true});
     window.addEventListener('hashchange',()=>{
-      const link=links.find(a=>a.getAttribute('href')===location.hash);
-      if(link)activate(link); else updateFromScroll();
+      const item=sectionLinks.find(x=>x.href===location.hash);
+      if(item)goToSection(item); else updateFromScroll();
     });
-    const hashLink=links.find(a=>a.getAttribute('href')===location.hash);
-    if(hashLink)activate(hashLink); else updateFromScroll();
+
+    $('#mobileDashboardMenu')?.addEventListener('click',()=>{
+      document.body.classList.contains('mobile-nav-open')?closeMobileNav():openMobileNav();
+    });
+    $('#mobileNavOverlay')?.addEventListener('click',closeMobileNav);
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMobileNav();});
+
+    const initial=sectionLinks.find(x=>x.href===location.hash);
+    if(initial){
+      setTimeout(()=>goToSection(initial),100);
+    }else{
+      updateFromScroll();
+    }
   }
 
   const isAdmin=()=>window.GNDAuth?.getSession?.()?.role==='admin';
 
   function leadById(id){
     return window.GNDPortal?.getData?.()?.leads?.find(x=>String(x.id)===String(id))||null;
+  }
+
+  function selectorEscape(v){
+    if(window.CSS&&typeof CSS.escape==='function')return CSS.escape(String(v));
+    return String(v).replace(/["\\]/g,'\\$&');
   }
 
   function spamButton(id,small=false){
@@ -70,8 +155,8 @@
   function injectSpamActions(){
     if(!isAdmin())return;
     $$('[data-admin-toggle]').forEach(btn=>{
-      const id=btn.dataset.adminToggle,cell=btn.parentElement;
-      if(cell && !cell.querySelector('[data-spam-lead="'+CSS.escape(id)+'"]')){
+      const id=btn.dataset.adminToggle,cell=btn.parentElement,sel=selectorEscape(id);
+      if(cell&&!cell.querySelector('[data-spam-lead="'+sel+'"]')){
         let wrap=cell.querySelector('.lead-row-actions');
         if(!wrap){
           wrap=document.createElement('div');wrap.className='lead-row-actions';
@@ -81,15 +166,15 @@
       }
     });
     $$('[data-mobile-admin-toggle]').forEach(btn=>{
-      const id=btn.dataset.mobileAdminToggle,card=btn.closest('.mobile-data-card');
-      if(card && !card.querySelector('[data-spam-lead="'+CSS.escape(id)+'"]')){
+      const id=btn.dataset.mobileAdminToggle,card=btn.closest('.mobile-data-card'),sel=selectorEscape(id);
+      if(card&&!card.querySelector('[data-spam-lead="'+sel+'"]')){
         let wrap=document.createElement('div');wrap.className='lead-row-actions';
         btn.parentNode.insertBefore(wrap,btn);wrap.appendChild(btn);wrap.appendChild(spamButton(id,false));
       }
     });
     $$('#attentionQueue [data-open-lead]').forEach(btn=>{
-      const id=btn.dataset.openLead,row=btn.closest('.attention-row');
-      if(row && !row.querySelector('[data-spam-lead="'+CSS.escape(id)+'"]')){
+      const id=btn.dataset.openLead,row=btn.closest('.attention-row'),sel=selectorEscape(id);
+      if(row&&!row.querySelector('[data-spam-lead="'+sel+'"]')){
         let wrap=document.createElement('div');wrap.className='lead-row-actions';
         btn.parentNode.insertBefore(wrap,btn);wrap.appendChild(btn);wrap.appendChild(spamButton(id,true));
       }
@@ -110,7 +195,7 @@
   }
 
   function escapeHtml(v){
-    return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
   }
 
   async function deleteSpam(id,button){
@@ -124,7 +209,7 @@
       await window.GNDAPI.deleteLead(id);
       window.GNDPortal?.toast?.('Spam lead deleted');
       await window.GNDPortal?.refresh?.();
-      const dialog=$('#loginAlertDialog');if(dialog?.open && !$('#loginAlertSpamList .spam-popup-row'))dialog.close();
+      const dialog=$('#loginAlertDialog');if(dialog?.open&&!$('#loginAlertSpamList .spam-popup-row'))dialog.close();
     }catch(err){
       window.GNDPortal?.toast?.(err.message||'Could not delete lead');
     }finally{
@@ -152,7 +237,7 @@
   const adminRoot=$('#leads')||$('#adminActionCenter');
   if(adminRoot)observer.observe(document.body,{subtree:true,childList:true});
 
-  setupActiveSidebar();
+  setupNavigation();
   injectSpamActions();
   const existing=window.GNDPortal?.getData?.();
   if(existing?.leads)ensurePopupList(existing.leads);
