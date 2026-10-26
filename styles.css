@@ -675,3 +675,30 @@ html,body{width:100%;max-width:100%;overflow-x:clip}
   .mobile-dashboard-menu{width:42px;padding:8px;justify-content:center}
   .dash-logout-btn{padding:8px 9px!important}
 }
+
+/* v11.9 ledger and application separation */
+.admin-destination-panel{position:relative;scroll-margin-top:100px}
+.section-destination-label{
+  display:inline-flex;align-items:center;margin:-4px 0 12px;padding:6px 10px;border-radius:999px;
+  background:#edf6ff;color:#0a69ad;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.06em
+}
+#payouts{border-top:4px solid #2685cf}
+#applications{border-top:4px solid #7a5bb5}
+#applications .section-destination-label{background:#f4f0ff;color:#634899}
+.nav-target-focus{animation:gndTargetFocus 1.55s ease}
+@keyframes gndTargetFocus{
+  0%{box-shadow:0 0 0 0 rgba(19,140,243,.45)}
+  35%{box-shadow:0 0 0 5px rgba(19,140,243,.16)}
+  100%{box-shadow:0 0 0 0 rgba(19,140,243,0)}
+}
+.danger-action,.application-delete-btn{color:#aa2d3b!important;border-color:#e8b6bc!important;background:#fff5f6!important}
+.danger-action:hover,.application-delete-btn:hover{background:#ffe8eb!important;color:#8d1e2b!important}
+.application-card .field{min-width:190px}
+.application-delete-btn{margin-top:8px;width:100%}
+#payoutLedgerBody td:last-child{white-space:nowrap}
+@media(max-width:820px){
+  .admin-destination-panel{scroll-margin-top:82px}
+  .section-destination-label{margin-bottom:10px}
+  .application-card{grid-template-columns:1fr!important}
+  .application-card .field{min-width:0;width:100%}
+}
