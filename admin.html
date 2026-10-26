@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <title>GetNetDirect Admin Portal</title>
-<link href="styles.css?v=11.7" rel="stylesheet"/>
+<link href="styles.css?v=11.9" rel="stylesheet"/>
 <script>
     (function(){
       try{
@@ -149,15 +149,15 @@
 <div class="qr-preview-card"><div class="qr-frame" id="adminQrPreview"><div class="qr-placeholder">Select a profile to generate a QR code</div></div><strong id="adminQrName">GetNetDirect Referral QR</strong><span class="code" id="adminQrCode">—</span></div>
 </div>
 </section>
-<section class="panel" id="payouts">
+<section class="panel admin-destination-panel" id="payouts"><div class="section-destination-label">Partner Payout Ledger</div>
 <div class="panel-head panel-head-wrap">
 <div><h2>Partner Payout Ledger</h2><p class="panel-sub">Track each referral commission from pending through paid. Use Void for duplicates, test records or disqualified referrals.</p></div>
 <div class="ledger-totals"><span>Pending: <strong id="ledgerPendingTotal">$0</strong></span><span>Approved: <strong id="ledgerApprovedTotal">$0</strong></span><span>Paid: <strong id="ledgerPaidTotal">$0</strong></span></div>
 </div>
-<div class="desktop-table-only table-wrap"><table class="table"><thead><tr><th>Customer</th><th>Partner</th><th>Lead Outcome</th><th>Amount</th><th>Payout</th><th>Paid Date</th><th>Reference</th></tr></thead><tbody id="payoutLedgerBody"></tbody></table></div>
+<div class="desktop-table-only table-wrap"><table class="table"><thead><tr><th>Customer</th><th>Partner</th><th>Lead Outcome</th><th>Amount</th><th>Payout</th><th>Paid Date</th><th>Reference</th><th>Action</th></tr></thead><tbody id="payoutLedgerBody"></tbody></table></div>
 <div class="mobile-card-list" id="payoutLedgerCards"></div>
 </section>
-<section class="panel" id="applications"><div class="panel-head"><div><h2>Partner Application Inbox <span class="status-badge st-new" id="applicationCount">—</span></h2><p class="panel-sub">Review leasing-office and realtor applications here. Create approved accounts in Team &amp; Partners; changing an application status alone does not create a login.</p></div></div><div id="partnerApplicationInbox">Loading applications…</div></section>
+<section class="panel admin-destination-panel" id="applications"><div class="section-destination-label">Partner Applications</div><div class="panel-head"><div><h2>Partner Application Inbox <span class="status-badge st-new" id="applicationCount">—</span></h2><p class="panel-sub">Review leasing-office and realtor applications here. Create approved accounts in Team &amp; Partners; changing an application status alone does not create a login.</p></div></div><div id="partnerApplicationInbox">Loading applications…</div></section>
 <section class="panel" id="myLogin">
 <div class="panel-head panel-head-wrap"><div><h2>My Login</h2><p class="panel-sub">Change your own Admin username or password. Your current password is required before any change is saved.</p></div></div>
 <div class="account-settings-grid">
@@ -245,9 +245,9 @@
 <dialog aria-labelledby="loginAlertTitle" class="login-alert-dialog" id="loginAlertDialog"><button aria-label="Close alerts" class="dialog-close" data-dismiss-login-alert="" type="button">×</button><span class="portal-kicker">Welcome back</span><h2 id="loginAlertTitle">You have leads needing attention</h2><p id="loginAlertSummary"></p><p class="report-note">Closing this message does not clear pending work. The priority queue remains at the top of your dashboard.</p><button class="btn btn-primary" id="loginGoQueue" type="button">Review My Priority Queue</button></dialog>
 <div aria-live="polite" class="toast" id="toast"></div>
 <script crossorigin="anonymous" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="marketing.js?v=11.7"></script>
-<script src="api-client.js?v=11.7"></script><script src="auth.js?v=11.7"></script>
-<script src="insights-core.js?v=11.7"></script>
-<script src="script.js?v=11.7"></script><script src="admin-alerts.js?v=11.7"></script><script src="account-settings.js?v=11.7"></script><script src="account-management.js?v=11.7"></script>
-<script src="portal-ui.js?v=11.7"></script>\n</body>
+<script src="marketing.js?v=11.9"></script>
+<script src="api-client.js?v=11.9"></script><script src="auth.js?v=11.9"></script>
+<script src="insights-core.js?v=11.9"></script>
+<script src="script.js?v=11.9"></script><script src="admin-alerts.js?v=11.9"></script><script src="account-settings.js?v=11.9"></script><script src="account-management.js?v=11.9"></script>
+<script src="portal-ui.js?v=11.9"></script>\n</body>
 </html>
