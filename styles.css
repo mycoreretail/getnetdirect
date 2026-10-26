@@ -556,3 +556,23 @@ section[id]{scroll-margin-top:128px}
 @media(max-width:820px){
   [data-reset-password],[data-manage-account]{min-height:44px;padding:10px 12px;margin-top:5px}
 }
+
+/* v11.5 streamlined in-portal user guides */
+.user-guide-panel{scroll-margin-top:110px}
+.guide-quickstart{background:linear-gradient(135deg,#eef7ff,#f8fbff);border:1px solid #cfe3f5;border-radius:16px;padding:18px 20px;margin-bottom:16px;color:var(--navy)}
+.guide-quickstart>strong{display:block;font-size:16px;margin-bottom:8px}
+.guide-quickstart ol{margin:0;padding-left:22px;color:#425a75;display:grid;gap:5px}
+.guide-accordion{display:grid;gap:10px}
+.guide-accordion details{border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
+.guide-accordion summary{cursor:pointer;list-style:none;padding:15px 18px;font-weight:850;color:var(--navy);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px}
+.guide-accordion summary::-webkit-details-marker{display:none}
+.guide-accordion summary:after{content:'+';font-size:22px;line-height:1;color:var(--blue);font-weight:700}
+.guide-accordion details[open] summary{background:#f7fbff;border-bottom:1px solid var(--line)}
+.guide-accordion details[open] summary:after{content:'–'}
+.guide-body{padding:14px 18px 17px;color:#52647d;font-size:14px;line-height:1.65}
+.guide-body p{margin:0 0 8px}.guide-body p:last-child{margin-bottom:0}
+@media(max-width:640px){
+  .guide-quickstart{padding:15px}
+  .guide-accordion summary{padding:14px;font-size:14px}
+  .guide-body{padding:12px 14px 15px;font-size:13px}
+}
