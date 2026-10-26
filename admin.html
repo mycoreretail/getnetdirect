@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <title>GetNetDirect Admin Portal</title>
-<link href="styles.css?v=11.4.1" rel="stylesheet"/>
+<link href="styles.css?v=11.5.1" rel="stylesheet"/>
 <script>
     (function(){
       try{
@@ -36,7 +36,7 @@
 <nav aria-label="Admin navigation" class="sidebar">
 <a class="side-link active" href="#overview">Overview</a>
 <a class="side-link" href="#adminActionCenter">Priority Alerts</a><a class="side-link" href="#leads">Leads</a><a class="side-link" href="reports.html">Reports &amp; Trends</a><a class="side-link" href="#myLogin">My Login</a>
-<a class="side-link" href="#people">Team &amp; Partners</a><a class="side-link" href="#marketingAdmin">QR &amp; Flyers</a>
+<a class="side-link" href="#people">Team &amp; Partners</a><a class="side-link" href="#marketingAdmin">QR &amp; Flyers</a><a class="side-link" href="#userGuide">User Guide</a>
 <a class="side-link" href="#payouts">Payout Ledger</a><a class="side-link" href="#applications">Partner Applications</a>
 <a class="side-link" href="#recommendations">Recommendations</a>
 </nav>
@@ -165,7 +165,7 @@
     <div class="account-current"><span class="status-badge st-complete">Signed in</span><strong id="myLoginCurrentUser">Admin</strong></div>
     <form id="myLoginForm" autocomplete="off">
       <div class="field"><label for="myLoginCurrentPassword">Current Password *</label><div class="password-field"><input id="myLoginCurrentPassword" name="currentPassword" type="password" autocomplete="current-password" required><button class="password-toggle" type="button" data-password-toggle="myLoginCurrentPassword">Show</button></div></div>
-      <div class="field"><label for="myLoginUsername">New Username</label><input id="myLoginUsername" name="newUsername" autocomplete="username" minlength="3" maxlength="80" placeholder="Leave unchanged to keep current username"></div>
+      <div class="field"><label for="myLoginUsername">New Username</label><input id="myLoginUsername" name="newUsername" autocomplete="username" autocapitalize="none" spellcheck="false" minlength="3" maxlength="80" placeholder="Leave unchanged to keep current username"><div class="field-help">Usernames are not case-sensitive.</div></div>
       <div class="field"><label for="myLoginNewPassword">New Password</label><div class="password-field"><input id="myLoginNewPassword" name="newPassword" type="password" autocomplete="new-password" minlength="8" maxlength="72" placeholder="Leave blank to keep current password"><button class="password-toggle" type="button" data-password-toggle="myLoginNewPassword">Show</button></div></div>
       <div class="field"><label for="myLoginConfirmPassword">Confirm New Password</label><div class="password-field"><input id="myLoginConfirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="72" placeholder="Re-enter new password"><button class="password-toggle" type="button" data-password-toggle="myLoginConfirmPassword">Show</button></div></div>
       <div class="field"><button class="btn btn-primary" type="submit">Update My Login</button></div>
@@ -188,7 +188,28 @@
 <article class="recommend-card"><strong>One account per person/business</strong><p>Each employee, contractor rep, leasing office or realtor should have their own account so attribution stays clean.</p></article>
 </div>
 </section>
-</main>
+<section class="panel user-guide-panel" id="userGuide">
+  <div class="panel-head panel-head-wrap">
+    <div><span class="portal-kicker">Help Center</span><h2>Admin User Guide</h2><p class="panel-sub">A simple guide for running GetNetDirect day to day. Open only the section you need.</p></div>
+    <a class="btn btn-secondary" href="index.html" target="_blank" rel="noopener">Open Customer Website</a>
+  </div>
+  <div class="guide-quickstart">
+    <strong>Daily Admin Routine</strong>
+    <ol><li>Check <b>Priority Alerts</b>.</li><li>Review and assign new leads.</li><li>Verify reported signups/installations.</li><li>Update partner payouts when eligible.</li><li>Review Reports &amp; Trends.</li></ol>
+  </div>
+  <div class="guide-accordion">
+    <details open><summary>1. New Leads &amp; Priority Alerts</summary><div class="guide-body"><p>Start with <b>Priority Alerts</b>. New, overdue, unassigned, and verification-needed leads appear here. Open a lead, assign a rep, set priority, and add a next follow-up date.</p><p><b>Tip:</b> red/urgent items should be handled first.</p></div></details>
+    <details><summary>2. Managing a Customer Lead</summary><div class="guide-body"><p>Use Leads to search customers, assign/reassign an employee, update provider/order/install information, add internal notes, and verify final outcomes.</p><p><b>Admin-only final statuses:</b> Complete, Not Serviceable, Cancelled, and Void.</p></div></details>
+    <details><summary>3. Employees / Contractors</summary><div class="guide-body"><p>Go to <b>Team &amp; Partners</b> to create employee or contractor accounts, assign a tracking code, pause/deactivate access, or open account controls.</p><p>Each person should have their own login so leads and activity stay attributable.</p></div></details>
+    <details><summary>4. Referral Partners</summary><div class="guide-body"><p>Create accounts for leasing offices, realtors, property managers, builders, movers, insurance agents, and other partners. Each partner gets a unique referral code, QR, link, and payout history.</p></div></details>
+    <details><summary>5. Resetting Someone's Password</summary><div class="guide-body"><p>Find the existing employee or partner in <b>Team &amp; Partners</b> and click <b>Reset Password</b>. Generate a temporary password, save it, and give it to them. Their profile, leads, QR code, and payout history stay attached.</p><p>At the next login, they are required to create their own password.</p></div></details>
+    <details><summary>6. QR Codes &amp; Flyers</summary><div class="guide-body"><p>Use <b>QR &amp; Flyers</b> to generate a QR or printable handout for any employee or referral partner. Customers who scan the code are automatically attributed to that person or business.</p></div></details>
+    <details><summary>7. Partner Payouts</summary><div class="guide-body"><p>Admin controls payout amount and status. Recommended flow: <b>Pending → Approved → Paid</b>. Record the paid date and payment reference. Use Void for invalid/disqualified payout records.</p></div></details>
+    <details><summary>8. Reports &amp; Trends</summary><div class="guide-body"><p>Open <b>Reports &amp; Trends</b> to review day-over-day, month-over-month, and year-over-year activity, employee performance, partner performance, and lead outcomes.</p></div></details>
+    <details><summary>9. Your Login</summary><div class="guide-body"><p>Use <b>My Login</b> to change your own username or password. Usernames are <b>not case-sensitive</b>.</p></div></details>
+    <details><summary>10. Status Rules</summary><div class="guide-body"><p><b>Void</b> = duplicate/test/fake/invalid. <b>Cancelled</b> = an order/process was started and later cancelled. <b>Not Interested</b> = customer declined. <b>Not Serviceable</b> = service cannot be provided. <b>Complete</b> = Admin verified the successful final outcome.</p></div></details>
+  </div>
+</section>\n</main>
 </div>
 
 <dialog aria-labelledby="accountManagerTitle" class="account-manager-dialog" id="accountManagerDialog">
@@ -206,7 +227,7 @@
       <div><span>Tracking code</span><strong id="accountManagerCode">—</strong></div>
     </div>
     <div class="form-grid account-manager-fields">
-      <div class="field"><label for="accountManagerUsername">Username</label><input id="accountManagerUsername" minlength="3" maxlength="80" autocomplete="off" required></div>
+      <div class="field"><label for="accountManagerUsername">Username</label><input id="accountManagerUsername" minlength="3" maxlength="80" autocomplete="off" autocapitalize="none" spellcheck="false" required><div class="field-help">Not case-sensitive.</div></div>
       <div class="field"><label for="accountManagerTrackingCode">Tracking / Referral Code</label><input id="accountManagerTrackingCode" minlength="3" maxlength="48" autocomplete="off" required><div class="field-help">Changing this code makes old QR codes and printed flyers stop attributing new scans. Regenerate them after a code change.</div></div>
       <div class="field"><label for="accountManagerStatus">Account Status</label><select id="accountManagerStatus"><option>Active</option><option>Pending Approval</option><option>Paused</option><option>Inactive</option></select></div>
       <div class="field full"><label for="accountManagerPassword">Temporary Password</label><div class="password-field"><input id="accountManagerPassword" type="password" minlength="8" maxlength="72" autocomplete="new-password" placeholder="Leave blank to keep current password"><button class="password-toggle" type="button" data-password-toggle="accountManagerPassword">Show</button></div><div class="field-help"><strong>No old password is needed.</strong> Generate a temporary password below. Once saved, the user signs in with it and must create a new private password before entering the portal.</div></div>
@@ -224,9 +245,9 @@
 <dialog aria-labelledby="loginAlertTitle" class="login-alert-dialog" id="loginAlertDialog"><button aria-label="Close alerts" class="dialog-close" data-dismiss-login-alert="" type="button">×</button><span class="portal-kicker">Welcome back</span><h2 id="loginAlertTitle">You have leads needing attention</h2><p id="loginAlertSummary"></p><p class="report-note">Closing this message does not clear pending work. The priority queue remains at the top of your dashboard.</p><button class="btn btn-primary" id="loginGoQueue" type="button">Review My Priority Queue</button></dialog>
 <div aria-live="polite" class="toast" id="toast"></div>
 <script crossorigin="anonymous" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="marketing.js?v=11.4"></script>
-<script src="api-client.js?v=11.4"></script><script src="auth.js?v=11.4"></script>
-<script src="insights-core.js?v=11.4"></script>
-<script src="script.js?v=11.4"></script><script src="admin-alerts.js?v=11.4"></script><script src="account-settings.js?v=11.4"></script><script src="account-management.js?v=11.4"></script>
+<script src="marketing.js?v=11.5"></script>
+<script src="api-client.js?v=11.5"></script><script src="auth.js?v=11.5"></script>
+<script src="insights-core.js?v=11.5"></script>
+<script src="script.js?v=11.5"></script><script src="admin-alerts.js?v=11.5"></script><script src="account-settings.js?v=11.5"></script><script src="account-management.js?v=11.5"></script>
 </body>
 </html>
