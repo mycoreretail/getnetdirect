@@ -69,6 +69,10 @@
         const offset=(header?.getBoundingClientRect().height||72)+12;
         const top=item.target.getBoundingClientRect().top+window.scrollY-offset;
         window.scrollTo({top:Math.max(0,top),behavior:'smooth'});
+        document.querySelectorAll('.nav-target-focus').forEach(el=>el.classList.remove('nav-target-focus'));
+        item.target.classList.add('nav-target-focus');
+        clearTimeout(window.__gndNavFocusTimer);
+        window.__gndNavFocusTimer=setTimeout(()=>item.target.classList.remove('nav-target-focus'),1600);
         try{history.replaceState(null,'',item.href);}catch{}
       };
       if(isMobileNav()){
